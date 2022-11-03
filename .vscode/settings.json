@@ -11,5 +11,7 @@
         "**/.settings": true,
         "**/.factorypath": true,
         "**/node_modules": true
-    }
+    },
+    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+    "editor.tabSize": 2
 }
