@@ -6,11 +6,11 @@ export class PreKey {
   id: number;
 
   @Prop({ reqired: true })
-  key: Uint8Array;
+  key: string;
 }
 
 @Schema()
 export class SignedPreKey extends PreKey {
   @Prop({ reqired: true })
-  signature: Uint8Array;
+  signature: string;
 }

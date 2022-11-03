@@ -6,7 +6,7 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   username: string;
 
   @Prop({ required: true })
@@ -16,7 +16,7 @@ export class User {
   displayName: string;
 
   @Prop()
-  identityKey: Uint8Array;
+  identityKey: string;
 
   @Prop()
   signedPreKey: SignedPreKey;
