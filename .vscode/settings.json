@@ -13,5 +13,7 @@
         "**/node_modules": true
     },
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "typescript.preferences.quoteStyle": "single",
+    "javascript.preferences.quoteStyle": "single"
 }
