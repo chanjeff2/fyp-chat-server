@@ -1,8 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
-  NotImplementedException,
+  NotFoundException,
   Param,
   Post,
 } from '@nestjs/common';
@@ -17,13 +18,19 @@ export class UsersController {
 
   @Post('')
   async register(@Body() createUserDto: CreateUserDto): Promise<User> {
-    // TODO: check if repeated username
+    if (await this.usersService.isUserExist(createUserDto.username)) {
+      throw new BadRequestException('Username already exists');
+    }
     const user = await this.usersService.createUser(createUserDto);
     return user;
   }
 
   @Get(':username')
-  getUser(@Param('username') username: string): UserDto {
-    throw new NotImplementedException();
+  async getUserDto(@Param('username') username: string): Promise<UserDto> {
+    const user = await this.usersService.getUserAndFetchOneTimeKey(username);
+    if (!user) {
+      throw new NotFoundException(`User ${username} not found`);
+    }
+    return UserDto.from(user);
   }
 }
