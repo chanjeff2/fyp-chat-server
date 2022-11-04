@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsString } from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
 import { PreKeyDto, SignedPreKeyDto } from './pre-key.dto';
 
 export class CreateUserDto {
@@ -10,7 +10,8 @@ export class CreateUserDto {
   registrationId: number;
 
   @IsString()
-  displayName: string;
+  @IsOptional()
+  displayName?: string;
 
   @IsString()
   identityKey: string;
