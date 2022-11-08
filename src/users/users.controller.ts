@@ -4,13 +4,18 @@ import {
   Controller,
   Get,
   NotFoundException,
+  NotImplementedException,
   Param,
+  Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
 import { User } from 'src/models/user.model';
+import { UpdateKeysDto } from './dto/update-keys.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -32,5 +37,12 @@ export class UsersController {
       throw new NotFoundException(`User ${username} not found`);
     }
     return UserDto.from(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('update-keys')
+  async updateKeys(@Body() updateKeysDto: UpdateKeysDto) {
+    // TODO: implement updateKeys()
+    throw new NotImplementedException();
   }
 }

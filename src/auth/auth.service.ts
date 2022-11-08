@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from 'src/models/user.model';
 import { UsersService } from 'src/users/users.service';
@@ -8,6 +9,7 @@ import { AccessTokenDto } from './dto/access-token.dto';
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private config: ConfigService,
     private jwtService: JwtService,
   ) {}
 
