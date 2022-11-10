@@ -18,4 +18,4 @@ export class Device {
   signedPreKey: SignedPreKey;
 }
 
-export const UserSchema = SchemaFactory.createForClass(Device);
+export const DeviceSchema = SchemaFactory.createForClass(Device);
