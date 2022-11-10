@@ -6,6 +6,7 @@ import {
   Body,
   UseFilters,
 } from '@nestjs/common';
+import { AccountDto } from 'src/account/dto/account.dto';
 import { MongoExceptionFilter } from 'src/filters/mongo-exception.filter';
 import { AuthRequest } from 'src/interfaces/auth-request.interface';
 import { AuthService } from './auth.service';
@@ -24,8 +25,8 @@ export class AuthController {
 
   @Post('register')
   @UseFilters(MongoExceptionFilter)
-  async register(@Body() registerDto: RegisterDto) {
+  async register(@Body() registerDto: RegisterDto): Promise<AccountDto> {
     const user = await this.authService.register(registerDto);
-    return user;
+    return AccountDto.from(user);
   }
 }

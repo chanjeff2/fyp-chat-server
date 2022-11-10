@@ -1,35 +1,28 @@
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  NotImplementedException,
-  Param,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { UserProfileDto } from './dto/user-profile.dto';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
-import { UpdateKeysDto } from './dto/update-keys.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Get(':username')
-  async getUserDto(@Param('username') username: string): Promise<UserDto> {
-    const user = await this.usersService.getUserAndFetchOneTimeKey(username);
+  @Get('id/:id')
+  async getUserById(@Param('id') id: string): Promise<UserProfileDto> {
+    const user = await this.usersService.getUserById(id);
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+    return UserProfileDto.from(user);
+  }
+
+  @Get('username/:username')
+  async getUserByUsername(
+    @Param('username') username: string,
+  ): Promise<UserProfileDto> {
+    const user = await this.usersService.getUserByUsername(username);
     if (!user) {
       throw new NotFoundException(`User ${username} not found`);
     }
-    return UserDto.from(user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('update-keys')
-  async updateKeys(@Body() updateKeysDto: UpdateKeysDto) {
-    // TODO: implement updateKeys()
-    throw new NotImplementedException();
+    return UserProfileDto.from(user);
   }
 }

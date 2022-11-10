@@ -1,15 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, ObjectId } from 'mongoose';
 import { PreKey, SignedPreKey } from './pre-key.model';
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
+  _id: ObjectId;
+
   @Prop({ required: true, unique: true })
   username: string;
 
-  @Prop({ required: true })
+  @Prop()
   registrationId: number;
 
   @Prop()

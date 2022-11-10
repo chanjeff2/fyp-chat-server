@@ -7,8 +7,3 @@ export class PreKeyDto {
   @IsString()
   key: string;
 }
-
-export class SignedPreKeyDto extends PreKeyDto {
-  @IsString()
-  signature: string;
-}

@@ -18,7 +18,12 @@ export class UsersService {
     return doc != null;
   }
 
-  async getUser(username: string): Promise<User | null> {
+  async getUserById(id: string): Promise<User | null> {
+    const user = await this.userModel.findById(id);
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | null> {
     const user = await this.userModel.findOne({ username: username });
     return user;
   }
