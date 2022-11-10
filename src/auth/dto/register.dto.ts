@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
-import { PreKeyDto, SignedPreKeyDto } from './pre-key.dto';
+import { PreKeyDto, SignedPreKeyDto } from './../../users/dto/pre-key.dto';
 
-export class CreateUserDto {
+export class RegisterDto {
   @IsString()
   username: string;
 
