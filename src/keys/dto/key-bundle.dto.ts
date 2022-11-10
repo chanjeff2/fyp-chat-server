@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
-import { PreKeyDto } from './pre-key.dto';
-import { SignedPreKeyDto } from './signed-pre-key.dto';
+import { PreKey } from 'src/models/pre-key.model';
+import { SignedPreKey } from 'src/models/signed-pre-key.model';
 
 export class KeyBundleDto {
   @IsInt()
@@ -10,9 +10,9 @@ export class KeyBundleDto {
   @IsString()
   identityKey: string;
 
-  @Type(() => SignedPreKeyDto)
-  signedPreKey: SignedPreKeyDto;
+  @Type(() => SignedPreKey)
+  signedPreKey: SignedPreKey;
 
-  @Type(() => PreKeyDto)
-  oneTimeKey: PreKeyDto;
+  @Type(() => PreKey)
+  oneTimeKey: PreKey;
 }
