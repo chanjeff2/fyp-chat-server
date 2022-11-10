@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId } from 'mongoose';
-import { PreKey, SignedPreKey } from './pre-key.model';
+import mongoose, { Document, ObjectId } from 'mongoose';
+import { Device } from './device.model';
 
 export type UserDocument = User & Document;
 
@@ -12,19 +12,13 @@ export class User {
   username: string;
 
   @Prop()
-  registrationId: number;
-
-  @Prop()
   displayName: string;
 
   @Prop()
   identityKey: string;
 
-  @Prop()
-  signedPreKey: SignedPreKey;
-
-  @Prop([PreKey])
-  oneTimeKeys: PreKey[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }] })
+  devices: Device[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
