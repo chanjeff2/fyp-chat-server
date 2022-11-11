@@ -4,6 +4,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Put,
   Request,
   UseGuards,
@@ -43,7 +44,7 @@ export class KeysController {
   @UseGuards(JwtAuthGuard)
   async getKeysForOneDevices(
     @Param('userId') userId: string,
-    @Param('deviceId') deviceId: number,
+    @Param('deviceId', ParseIntPipe) deviceId: number,
   ): Promise<KeyBundleDto> {
     const keyBundle = await this.keysService.getKeyBundle(userId, deviceId);
     if (!keyBundle) {
