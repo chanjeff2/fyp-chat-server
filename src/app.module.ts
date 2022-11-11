@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AccountModule } from './account/account.module';
+import { DevicesModule } from './devices/devices.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AccountModule } from './account/account.module';
     UsersModule,
     AuthModule,
     AccountModule,
+    DevicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
