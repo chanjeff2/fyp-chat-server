@@ -6,18 +6,21 @@ import { User } from 'src/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { AccessTokenDto } from './dto/access-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private config: ConfigService,
     private jwtService: JwtService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<User | null> {
     const user = await this.usersService.getUserByUsername(username);
+    if (!user) return null;
     // TODO: check password hash match
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) return null;
     return user;
   }
 
