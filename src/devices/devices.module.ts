@@ -7,8 +7,10 @@ import { DevicesService } from './devices.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Device.name, schema: DeviceSchema },
+    ]),
   ],
   controllers: [DevicesController],
   providers: [DevicesService],
