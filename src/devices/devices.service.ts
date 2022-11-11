@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { Device, DeviceDocument } from 'src/models/device.model';
 import { User, UserDocument } from 'src/models/user.model';
 import { CreateDeviceDto } from './dto/create-device.dto';
-import { DeviceDto } from './dto/device.dto';
 
 @Injectable()
 export class DevicesService {
@@ -14,22 +13,22 @@ export class DevicesService {
   ) {}
 
   async createDevice(
-    user: User,
+    userId: string,
     createDeviceDto: CreateDeviceDto,
   ): Promise<Device> {
-    const deviceId = await this.getNextUnusedDeviceId(user);
+    const deviceId = await this.getNextUnusedDeviceId(userId);
     const device = await this.deviceModel.create({
       deviceId: deviceId,
       ...createDeviceDto,
     });
-    await this.userModel.findByIdAndUpdate(user._id.toString(), {
+    await this.userModel.findByIdAndUpdate(userId, {
       $push: { devices: device },
     });
     return device;
   }
 
-  async getDevice(user: User, deviceId: number): Promise<Device | null> {
-    const devices = await this.getAllDevices(user);
+  async getDevice(userId: string, deviceId: number): Promise<Device | null> {
+    const devices = await this.getAllDevices(userId);
     for (let i = 0; i < devices.length; i++) {
       if (devices[i].deviceId === deviceId) {
         return devices[i];
@@ -42,9 +41,9 @@ export class DevicesService {
     return await this.deviceModel.findById(deviceId);
   }
 
-  async getAllDevices(user: User): Promise<Device[]> {
+  async getAllDevices(userId: string): Promise<Device[]> {
     const userWithDevices = await this.userModel
-      .findById(user._id.toString())
+      .findById(userId)
       .populate('devices')
       .exec();
     if (!userWithDevices) {
@@ -53,9 +52,9 @@ export class DevicesService {
     return userWithDevices.devices as Device[];
   }
 
-  private async getNextUnusedDeviceId(user: User): Promise<number> {
+  private async getNextUnusedDeviceId(userId: string): Promise<number> {
     let deviceId = 1;
-    const devices = await this.getAllDevices(user);
+    const devices = await this.getAllDevices(userId);
     devices.sort((a, b) => a.deviceId - b.deviceId);
     for (let i = 0; i < devices.length; i++) {
       if (devices[i].deviceId !== deviceId) {

@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AccountModule } from './account/account.module';
 import { DevicesModule } from './devices/devices.module';
+import { KeysModule } from './keys/keys.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DevicesModule } from './devices/devices.module';
     AuthModule,
     AccountModule,
     DevicesModule,
+    KeysModule,
   ],
   controllers: [AppController],
   providers: [AppService],
