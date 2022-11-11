@@ -14,5 +14,6 @@ import { DevicesService } from './devices.service';
   ],
   controllers: [DevicesController],
   providers: [DevicesService],
+  exports: [DevicesService],
 })
 export class DevicesModule {}

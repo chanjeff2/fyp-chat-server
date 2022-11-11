@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { DevicesModule } from 'src/devices/devices.module';
 import { Device, DeviceSchema } from 'src/models/device.model';
 import { OneTimeKey, OneTimeKeySchema } from 'src/models/one-time-key.model';
 import { User, UserSchema } from 'src/models/user.model';
@@ -13,6 +14,7 @@ import { KeysService } from './keys.service';
       { name: Device.name, schema: DeviceSchema },
       { name: OneTimeKey.name, schema: OneTimeKeySchema },
     ]),
+    DevicesModule,
   ],
   controllers: [KeysController],
   providers: [KeysService],
