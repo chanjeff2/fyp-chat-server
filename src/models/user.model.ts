@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, ObjectId, Types } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Device } from './device.model';
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  _id: ObjectId;
+  _id: string;
 
   @Prop({ required: true, unique: true })
   username: string;
@@ -21,7 +21,7 @@ export class User {
   identityKey: string;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }] })
-  devices: (Device | Types.ObjectId)[];
+  devices: (Device | string)[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -26,7 +26,7 @@ export class DevicesController {
     @Body() createDeviceDto: CreateDeviceDto,
   ): Promise<DeviceDto> {
     const device = await this.devicesService.createDevice(
-      user._id.toString(),
+      user._id,
       createDeviceDto,
     );
     return DeviceDto.from(device);
@@ -38,10 +38,7 @@ export class DevicesController {
     @AuthUser() user: User,
     @Param('deviceId', ParseIntPipe) deviceId: number,
   ): Promise<DeviceDto> {
-    const device = await this.devicesService.getDevice(
-      user._id.toString(),
-      deviceId,
-    );
+    const device = await this.devicesService.getDevice(user._id, deviceId);
     if (!device) throw new NotFoundException(`Device #${deviceId} not found`);
     return DeviceDto.from(device);
   }
@@ -49,9 +46,7 @@ export class DevicesController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async getAllDevices(@AuthUser() user: User): Promise<DeviceDto[]> {
-    const devices = await this.devicesService.getAllDevices(
-      user._id.toString(),
-    );
+    const devices = await this.devicesService.getAllDevices(user._id);
     return devices.map((device) => {
       return DeviceDto.from(device);
     });

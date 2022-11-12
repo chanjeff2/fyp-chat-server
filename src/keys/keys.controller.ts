@@ -25,7 +25,7 @@ export class KeysController {
     @AuthUser() user: User,
     @Body() updateKeysDto: UpdateKeysDto,
   ) {
-    await this.keysService.updateKeys(user._id.toString(), updateKeysDto);
+    await this.keysService.updateKeys(user._id, updateKeysDto);
   }
 
   @Get(':userId/devices')

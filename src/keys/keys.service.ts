@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { DevicesService } from 'src/devices/devices.service';
 import { Device, DeviceDocument } from 'src/models/device.model';
 import { OneTimeKey, OneTimeKeyDocument } from 'src/models/one-time-key.model';
@@ -38,11 +38,13 @@ export class KeysService {
       }
     }
     if (updateKeysDto.oneTimeKeys) {
-      const keys = updateKeysDto.oneTimeKeys.map((key) => ({
-        deviceId: updateKeysDto.deviceId,
-        userId: new Types.ObjectId(userId),
-        preKey: key,
-      }));
+      const keys: Partial<OneTimeKey>[] = updateKeysDto.oneTimeKeys.map(
+        (key) => ({
+          deviceId: updateKeysDto.deviceId,
+          userId: userId,
+          preKey: key,
+        }),
+      );
       await this.oneTimeKeyModel.insertMany(keys);
     }
   }
