@@ -6,11 +6,11 @@ import {
   Param,
   ParseIntPipe,
   Put,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AuthRequest } from 'src/interfaces/auth-request.interface';
+import { AuthUser } from 'src/decorators/user.decorator';
+import { User } from 'src/models/user.model';
 import { KeyBundleDto } from './dto/key-bundle.dto';
 import { UpdateKeysDto } from './dto/update-keys.dto';
 import { KeysService } from './keys.service';
@@ -22,10 +22,10 @@ export class KeysController {
   @Put('update-keys')
   @UseGuards(JwtAuthGuard)
   async updateKeys(
-    @Request() req: AuthRequest,
+    @AuthUser() user: User,
     @Body() updateKeysDto: UpdateKeysDto,
   ) {
-    await this.keysService.updateKeys(req.user._id.toString(), updateKeysDto);
+    await this.keysService.updateKeys(user._id.toString(), updateKeysDto);
   }
 
   @Get(':userId/devices')

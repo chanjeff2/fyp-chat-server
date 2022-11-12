@@ -1,14 +1,8 @@
-import {
-  Request,
-  Controller,
-  Post,
-  UseGuards,
-  Body,
-  UseFilters,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, UseFilters } from '@nestjs/common';
 import { AccountDto } from 'src/account/dto/account.dto';
+import { AuthUser } from 'src/decorators/user.decorator';
 import { MongoExceptionFilter } from 'src/filters/mongo-exception.filter';
-import { AuthRequest } from 'src/interfaces/auth-request.interface';
+import { User } from 'src/models/user.model';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LocalAuthGuard } from './local-auth.guard ';
@@ -19,8 +13,8 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req: AuthRequest) {
-    return this.authService.login(req.user);
+  async login(@AuthUser() user: User) {
+    return this.authService.login(user);
   }
 
   @Post('register')

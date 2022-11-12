@@ -6,11 +6,11 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AuthRequest } from 'src/interfaces/auth-request.interface';
+import { AuthUser } from 'src/decorators/user.decorator';
+import { User } from 'src/models/user.model';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceDto } from './dto/device.dto';
@@ -22,11 +22,11 @@ export class DevicesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async addDevice(
-    @Request() req: AuthRequest,
+    @AuthUser() user: User,
     @Body() createDeviceDto: CreateDeviceDto,
   ): Promise<DeviceDto> {
     const device = await this.devicesService.createDevice(
-      req.user._id.toString(),
+      user._id.toString(),
       createDeviceDto,
     );
     return DeviceDto.from(device);
@@ -35,11 +35,11 @@ export class DevicesController {
   @Get(':deviceId')
   @UseGuards(JwtAuthGuard)
   async getDevices(
-    @Request() req: AuthRequest,
+    @AuthUser() user: User,
     @Param('deviceId', ParseIntPipe) deviceId: number,
   ): Promise<DeviceDto> {
     const device = await this.devicesService.getDevice(
-      req.user._id.toString(),
+      user._id.toString(),
       deviceId,
     );
     if (!device) throw new NotFoundException(`Device #${deviceId} not found`);
@@ -48,9 +48,9 @@ export class DevicesController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAllDevices(@Request() req: AuthRequest): Promise<DeviceDto[]> {
+  async getAllDevices(@AuthUser() user: User): Promise<DeviceDto[]> {
     const devices = await this.devicesService.getAllDevices(
-      req.user._id.toString(),
+      user._id.toString(),
     );
     return devices.map((device) => {
       return DeviceDto.from(device);

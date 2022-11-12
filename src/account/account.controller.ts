@@ -1,19 +1,14 @@
-import {
-  Controller,
-  Get,
-  NotImplementedException,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AuthRequest } from 'src/interfaces/auth-request.interface';
+import { AuthUser } from 'src/decorators/user.decorator';
+import { User } from 'src/models/user.model';
 import { AccountDto } from './dto/account.dto';
 
 @Controller('account')
 export class AccountController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@Request() req: AuthRequest): Promise<AccountDto> {
-    return AccountDto.from(req.user);
+  async getProfile(@AuthUser() user: User): Promise<AccountDto> {
+    return AccountDto.from(user);
   }
 }
