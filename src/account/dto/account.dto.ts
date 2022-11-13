@@ -1,5 +1,5 @@
 import { Exclude, Expose, plainToInstance, Transform } from 'class-transformer';
-import { IsMongoId, IsString } from 'class-validator';
+import { IsMongoId, IsOptional, IsString } from 'class-validator';
 import { User } from 'src/models/user.model';
 
 @Exclude()
@@ -12,6 +12,11 @@ export class AccountDto {
   @IsString()
   @Expose()
   username: string;
+
+  @IsString()
+  @IsOptional()
+  @Expose()
+  displayName?: string;
 
   static from(user: User): AccountDto {
     return plainToInstance(AccountDto, user);
