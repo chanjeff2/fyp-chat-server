@@ -1,10 +1,12 @@
 import { Controller, Post, UseGuards, Body, UseFilters } from '@nestjs/common';
-import { AccountDto } from 'src/account/dto/account.dto';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { MongoExceptionFilter } from 'src/filters/mongo-exception.filter';
+import { JwtRefreshPayload } from 'src/interfaces/jwt-refresh-payload.interface';
 import { User } from 'src/models/user.model';
 import { AuthService } from './auth.service';
+import { AccessTokenDto } from './dto/access-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtRefreshAuthGuard } from './jwt-refresh-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard ';
 
 @Controller('auth')
@@ -13,14 +15,21 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@AuthUser() user: User) {
+  async login(@AuthUser() user: User): Promise<AccessTokenDto> {
     return this.authService.login(user);
   }
 
   @Post('register')
   @UseFilters(MongoExceptionFilter)
-  async register(@Body() registerDto: RegisterDto): Promise<AccountDto> {
-    const user = await this.authService.register(registerDto);
-    return AccountDto.from(user);
+  async register(@Body() registerDto: RegisterDto): Promise<AccessTokenDto> {
+    return await this.authService.register(registerDto);
+  }
+
+  @UseGuards(JwtRefreshAuthGuard)
+  @Post('refresh-tokens')
+  async refreshToken(
+    @AuthUser() user: JwtRefreshPayload,
+  ): Promise<AccessTokenDto> {
+    return await this.authService.refreshTokens(user.userId, user.refreshToken);
   }
 }

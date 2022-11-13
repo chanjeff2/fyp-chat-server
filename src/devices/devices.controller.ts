@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthUser } from 'src/decorators/user.decorator';
-import { User } from 'src/models/user.model';
+import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceDto } from './dto/device.dto';
@@ -22,11 +22,11 @@ export class DevicesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async addDevice(
-    @AuthUser() user: User,
+    @AuthUser() user: JwtPayload,
     @Body() createDeviceDto: CreateDeviceDto,
   ): Promise<DeviceDto> {
     const device = await this.devicesService.createDevice(
-      user._id,
+      user.userId,
       createDeviceDto,
     );
     return DeviceDto.from(device);
@@ -35,18 +35,18 @@ export class DevicesController {
   @Get(':deviceId')
   @UseGuards(JwtAuthGuard)
   async getDevices(
-    @AuthUser() user: User,
+    @AuthUser() user: JwtPayload,
     @Param('deviceId', ParseIntPipe) deviceId: number,
   ): Promise<DeviceDto> {
-    const device = await this.devicesService.getDevice(user._id, deviceId);
+    const device = await this.devicesService.getDevice(user.userId, deviceId);
     if (!device) throw new NotFoundException(`Device #${deviceId} not found`);
     return DeviceDto.from(device);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAllDevices(@AuthUser() user: User): Promise<DeviceDto[]> {
-    const devices = await this.devicesService.getAllDevices(user._id);
+  async getAllDevices(@AuthUser() user: JwtPayload): Promise<DeviceDto[]> {
+    const devices = await this.devicesService.getAllDevices(user.userId);
     return devices.map((device) => {
       return DeviceDto.from(device);
     });
