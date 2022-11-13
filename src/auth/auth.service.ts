@@ -49,6 +49,10 @@ export class AuthService {
     return token;
   }
 
+  async logout(userId: string) {
+    await this.usersService.updateUser(userId, { refreshToken: null });
+  }
+
   async getAndStoreToken(payload: JwtPayload): Promise<AccessTokenDto> {
     const dto = new AccessTokenDto();
     dto.accessToken = this.jwtService.sign(payload, {

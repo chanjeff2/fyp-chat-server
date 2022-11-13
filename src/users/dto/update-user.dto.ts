@@ -11,5 +11,5 @@ export class UpdateUserDto {
 
   @IsString()
   @IsOptional()
-  refreshToken?: string;
+  refreshToken?: string | null;
 }

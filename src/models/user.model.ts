@@ -24,7 +24,7 @@ export class User {
   devices: (Device | string)[];
 
   @Prop()
-  refreshToken: string;
+  refreshToken?: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
