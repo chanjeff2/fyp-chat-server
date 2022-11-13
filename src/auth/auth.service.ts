@@ -30,7 +30,7 @@ export class AuthService {
       userId: user._id,
     };
     const dto = new AccessTokenDto();
-    dto.access_token = this.jwtService.sign(payload);
+    dto.accessToken = this.jwtService.sign(payload);
     return dto;
   }
 
