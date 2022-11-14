@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { AccountModule } from './account/account.module';
 import { DevicesModule } from './devices/devices.module';
 import { KeysModule } from './keys/keys.module';
+import { HeartbeatModule } from './heartbeat/heartbeat.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { KeysModule } from './keys/keys.module';
     AccountModule,
     DevicesModule,
     KeysModule,
+    HeartbeatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
