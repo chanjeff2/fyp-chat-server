@@ -31,7 +31,7 @@ export class AuthService {
       username: user.username,
       userId: user._id,
     };
-    const token = await this.getAndStoreToken(payload);
+    const token = await this.getAndStoreTokens(payload);
     return token;
   }
 
@@ -45,7 +45,7 @@ export class AuthService {
       username: user.username,
       userId: user._id,
     };
-    const token = await this.getAndStoreToken(payload);
+    const token = await this.getAndStoreTokens(payload);
     return token;
   }
 
@@ -53,21 +53,29 @@ export class AuthService {
     await this.usersService.updateUser(userId, { refreshToken: null });
   }
 
-  async getAndStoreToken(payload: JwtPayload): Promise<AccessTokenDto> {
+  async getAndStoreTokens(payload: JwtPayload): Promise<AccessTokenDto> {
     const dto = new AccessTokenDto();
-    dto.accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
-    });
-    dto.refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-    });
+    dto.accessToken = this.getAccessToken(payload);
+    dto.refreshToken = this.getRefreshToken(payload);
     await this.updateRefreshToken(payload.userId, dto.refreshToken);
     return dto;
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string) {
+  private getAccessToken(payload: JwtPayload): string {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
+    });
+  }
+
+  private getRefreshToken(payload: JwtPayload): string {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+    });
+  }
+
+  private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await argon2.hash(refreshToken); // argon2 for long hash
     await this.usersService.updateUser(userId, {
       refreshToken: hashedRefreshToken,
@@ -91,7 +99,9 @@ export class AuthService {
       username: user.username,
       userId: user._id,
     };
-    const tokens = await this.getAndStoreToken(payload);
-    return tokens;
+    const token = new AccessTokenDto();
+    token.accessToken = this.getAccessToken(payload);
+    token.refreshToken = refreshToken;
+    return token;
   }
 }
