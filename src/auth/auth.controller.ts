@@ -1,4 +1,11 @@
-import { Controller, Post, UseGuards, Body, UseFilters } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  UseFilters,
+  HttpCode,
+} from '@nestjs/common';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { MongoExceptionFilter } from 'src/filters/mongo-exception.filter';
 import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
@@ -16,6 +23,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
+  @HttpCode(200)
   @Post('login')
   async login(@AuthUser() user: User): Promise<AccessTokenDto> {
     return this.authService.login(user);
@@ -28,12 +36,14 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Post('logout')
   async logout(@AuthUser() user: JwtPayload) {
     await this.authService.logout(user.userId);
   }
 
   @UseGuards(JwtRefreshAuthGuard)
+  @HttpCode(200)
   @Post('refresh-tokens')
   async refreshToken(
     @AuthUser() user: JwtRefreshPayload,
