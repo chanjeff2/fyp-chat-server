@@ -5,7 +5,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
-  Put,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -19,7 +19,7 @@ import { KeysService } from './keys.service';
 export class KeysController {
   constructor(private keysService: KeysService) {}
 
-  @Put('update-keys')
+  @Patch('update-keys')
   @UseGuards(JwtAuthGuard)
   async updateKeys(
     @AuthUser() user: JwtPayload,
