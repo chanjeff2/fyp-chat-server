@@ -4,7 +4,7 @@ import { Device } from './device.model';
 
 export type UserDocument = User & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   _id: string;
 

@@ -3,7 +3,7 @@ import { SignedPreKey } from './signed-pre-key.model';
 
 export type DeviceDocument = Device & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Device {
   _id: string;
 
