@@ -10,7 +10,7 @@ export class Device {
   @Prop({ required: true })
   deviceId: number;
 
-  @Prop()
+  @Prop({ required: true })
   name: string;
 
   @Prop()
@@ -18,6 +18,9 @@ export class Device {
 
   @Prop()
   signedPreKey: SignedPreKey;
+
+  @Prop({ required: true })
+  firebaseMessagingToken: string;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

@@ -6,4 +6,7 @@ export class CreateDeviceDto {
 
   @IsString()
   name: string;
+
+  @IsString()
+  firebaseMessagingToken: string;
 }
