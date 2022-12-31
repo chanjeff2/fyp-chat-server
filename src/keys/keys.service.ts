@@ -68,10 +68,11 @@ export class KeysService {
         oneTimeKey: await this.takeOneTimeKey(userId, device.deviceId),
       })),
     );
-    return <KeyBundleDto>{
-      identityKey: user.identityKey,
-      deviceKeyBundles: deviceKeyBundles,
-    };
+    const keyBundle = new KeyBundleDto();
+    keyBundle.identityKey = user.identityKey;
+    keyBundle.deviceKeyBundles = deviceKeyBundles;
+    console.log(keyBundle);
+    return keyBundle;
   }
 
   private async takeOneTimeKey(
