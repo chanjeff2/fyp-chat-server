@@ -8,6 +8,7 @@ import { AccessTokenDto } from './dto/access-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import * as argon2 from 'argon2';
+import ms, { StringValue } from 'ms';
 
 @Injectable()
 export class AuthService {
@@ -56,7 +57,17 @@ export class AuthService {
   async getAndStoreTokens(payload: JwtPayload): Promise<AccessTokenDto> {
     const dto = new AccessTokenDto();
     dto.accessToken = this.getAccessToken(payload);
+    const accessTokenTTL = ms(
+      (this.configService.get<string>('JWT_EXPIRES_IN') ??
+        '15m') as StringValue,
+    );
+    dto.accessTokenExpiresAt = new Date(Date.now() + accessTokenTTL);
     dto.refreshToken = this.getRefreshToken(payload);
+    const refreshTokenTTL = ms(
+      (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ??
+        '7d') as StringValue,
+    );
+    dto.refreshTokenExpiresAt = new Date(Date.now() + refreshTokenTTL);
     await this.updateRefreshToken(payload.userId, dto.refreshToken);
     return dto;
   }
@@ -101,7 +112,11 @@ export class AuthService {
     };
     const token = new AccessTokenDto();
     token.accessToken = this.getAccessToken(payload);
-    token.refreshToken = refreshToken;
+    const accessTokenTTL = ms(
+      (this.configService.get<string>('JWT_EXPIRES_IN') ??
+        '15m') as StringValue,
+    );
+    token.accessTokenExpiresAt = new Date(Date.now() + accessTokenTTL);
     return token;
   }
 }
