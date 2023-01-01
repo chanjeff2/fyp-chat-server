@@ -3,6 +3,7 @@ import { DevicesService } from 'src/devices/devices.service';
 import { MessageDto } from './dto/message.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import admin from 'firebase-admin';
+import { Message } from 'firebase-admin/lib/messaging/messaging-api';
 
 @Injectable()
 export class EventsService {
@@ -27,11 +28,28 @@ export class EventsService {
       return null;
     }
 
-    const message = {
+    const message: Message = {
+      token: device.firebaseMessagingToken,
       data: {
         ...dto,
       },
-      token: device.firebaseMessagingToken,
+      // Set Android priority to "high"
+      android: {
+        priority: 'high',
+      },
+      // Add APNS (Apple) config
+      apns: {
+        payload: {
+          aps: {
+            contentAvailable: true,
+          },
+        },
+        headers: {
+          'apns-push-type': 'background',
+          'apns-priority': '5', // Must be `5` when `contentAvailable` is set to true.
+          'apns-topic': 'io.flutter.plugins.firebase.messaging', // bundle identifier
+        },
+      },
     };
 
     const messageId = await admin.messaging().send(message);
