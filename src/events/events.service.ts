@@ -17,7 +17,7 @@ export class EventsService {
     dto.senderUserId = userId;
     dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
     dto.content = sendMessageDto.content;
-    dto.sentAt = sendMessageDto.sentAt.toISOString();
+    dto.sentAt = sendMessageDto.sentAt;
 
     // get recipient fcm token
     const device = await this.devicesService.getDevice(

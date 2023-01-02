@@ -14,5 +14,5 @@ export class SendMessageDto {
   content: string;
 
   @IsDate()
-  sentAt: Date;
+  sentAt: string; // iso string
 }
