@@ -1,4 +1,4 @@
-import { IsInt, IsMongoId, IsString } from 'class-validator';
+import { IsDate, IsInt, IsMongoId, IsString } from 'class-validator';
 
 export class SendMessageDto {
   @IsInt()
@@ -12,4 +12,7 @@ export class SendMessageDto {
 
   @IsString()
   content: string;
+
+  @IsDate()
+  sentAt: Date;
 }
