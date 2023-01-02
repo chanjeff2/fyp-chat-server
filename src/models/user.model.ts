@@ -12,13 +12,13 @@ export class User {
   username: string;
 
   @Prop()
-  displayName: string;
+  displayName?: string;
 
   @Prop({ required: true })
   passwordHash: string;
 
   @Prop()
-  identityKey: string;
+  identityKey?: string;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }] })
   devices: (Device | string)[];

@@ -60,16 +60,29 @@ export class KeysService {
     if (deviceId) {
       devices = devices.filter((device) => device.deviceId === deviceId);
     }
-    const deviceKeyBundles: DeviceKeyBundleDto[] = await Promise.all(
-      devices.map(async (device) => ({
-        deviceId: device.deviceId,
-        registrationId: device.registrationId,
-        signedPreKey: device.signedPreKey,
-        oneTimeKey: await this.takeOneTimeKey(userId, device.deviceId),
-      })),
-    );
     const keyBundle = new KeyBundleDto();
+    if (user.identityKey == null) {
+      return null; // not yet uploaded keys
+    }
     keyBundle.identityKey = user.identityKey;
+    const deviceKeyBundles: DeviceKeyBundleDto[] = await Promise.all(
+      devices
+        .filter(
+          (device) =>
+            device.registrationId != null && device.signedPreKey != null,
+        )
+        .map(async (device) => ({
+          deviceId: device.deviceId,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          registrationId: device.registrationId!, // checked non-null above
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          signedPreKey: device.signedPreKey!, // checked non-null above
+          oneTimeKey: await this.takeOneTimeKey(userId, device.deviceId),
+        })),
+    );
+    if (deviceKeyBundles.length === 0) {
+      return null;
+    }
     keyBundle.deviceKeyBundles = deviceKeyBundles;
     console.log(keyBundle);
     return keyBundle;

@@ -17,7 +17,7 @@ export class Device {
   registrationId: number;
 
   @Prop()
-  signedPreKey: SignedPreKey;
+  signedPreKey?: SignedPreKey;
 
   @Prop({ required: true })
   firebaseMessagingToken: string;
