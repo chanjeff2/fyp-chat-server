@@ -58,7 +58,14 @@ export class EventsService {
       return messageId;
     } catch (e) {
       console.error(e);
+      if (
+        e.code === 'messaging/registration-token-not-registered' ||
+        e.code === 'messaging/invalid-argument'
+      ) {
+        // remove stale device
+        this.devicesService.deleteDevice(userId, sendMessageDto.senderDeviceId);
+      }
+      return null;
     }
-    return null;
   }
 }
