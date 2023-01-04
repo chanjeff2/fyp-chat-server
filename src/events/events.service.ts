@@ -16,6 +16,7 @@ export class EventsService {
     const dto = new MessageDto();
     dto.senderUserId = userId;
     dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
+    dto.cipherTextType = sendMessageDto.cipherTextType.toString();
     dto.content = sendMessageDto.content;
     dto.sentAt = sendMessageDto.sentAt;
 

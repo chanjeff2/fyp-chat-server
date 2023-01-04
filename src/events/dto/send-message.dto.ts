@@ -10,6 +10,9 @@ export class SendMessageDto {
   @IsInt()
   recipientDeviceId: number;
 
+  @IsInt()
+  cipherTextType: number;
+
   @IsString()
   content: string;
 
