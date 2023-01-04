@@ -85,7 +85,6 @@ export class KeysService {
       return null;
     }
     keyBundle.deviceKeyBundles = deviceKeyBundles;
-    console.log(keyBundle);
     return keyBundle;
   }
 
