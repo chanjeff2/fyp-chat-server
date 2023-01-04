@@ -19,6 +19,14 @@ export class DevicesService {
     createDeviceDto: CreateDeviceDto,
   ): Promise<Device> {
     const deviceId = await this.getNextUnusedDeviceId(userId);
+    // remove all old devices as currently not support multi devices
+    const devices = await this.getAllDevices(userId);
+    await Promise.all(
+      devices.map(
+        async (device) => await this.deleteDevice(userId, device.deviceId),
+      ),
+    );
+    // create new device
     const device = await this.deviceModel.create({
       deviceId: deviceId,
       ...createDeviceDto,
@@ -55,16 +63,17 @@ export class DevicesService {
   }
 
   private async getNextUnusedDeviceId(userId: string): Promise<number> {
-    let deviceId = 1;
-    const devices = await this.getAllDevices(userId);
-    devices.sort((a, b) => a.deviceId - b.deviceId);
-    for (let i = 0; i < devices.length; i++) {
-      if (devices[i].deviceId !== deviceId) {
-        break;
-      }
-      deviceId++;
-    }
-    return deviceId;
+    return 1; // currently not yet support multi device
+    // let deviceId = 1;
+    // const devices = await this.getAllDevices(userId);
+    // devices.sort((a, b) => a.deviceId - b.deviceId);
+    // for (let i = 0; i < devices.length; i++) {
+    //   if (devices[i].deviceId !== deviceId) {
+    //     break;
+    //   }
+    //   deviceId++;
+    // }
+    // return deviceId;
   }
 
   async deleteDevice(userId: string, deviceId: number): Promise<Device | null> {
