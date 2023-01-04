@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DevicesModule } from 'src/devices/devices.module';
 import { Device, DeviceSchema } from 'src/models/device.model';
@@ -14,9 +14,10 @@ import { KeysService } from './keys.service';
       { name: Device.name, schema: DeviceSchema },
       { name: OneTimeKey.name, schema: OneTimeKeySchema },
     ]),
-    DevicesModule,
+    forwardRef(() => DevicesModule),
   ],
   controllers: [KeysController],
   providers: [KeysService],
+  exports: [KeysService],
 })
 export class KeysModule {}

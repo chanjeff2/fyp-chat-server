@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DevicesService } from 'src/devices/devices.service';
@@ -17,6 +17,7 @@ export class KeysService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(OneTimeKey.name)
     private oneTimeKeyModel: Model<OneTimeKeyDocument>,
+    @Inject(forwardRef(() => DevicesService))
     private devicesService: DevicesService,
   ) {}
 
@@ -98,5 +99,12 @@ export class KeysService {
     });
     if (!key) return null;
     return key.preKey;
+  }
+
+  async removeAllOneTimeKeysOfOneDevice(userId: string, deviceId: number) {
+    await this.oneTimeKeyModel.deleteMany({
+      userId: userId,
+      deviceId: deviceId,
+    });
   }
 }

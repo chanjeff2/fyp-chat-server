@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -34,7 +35,7 @@ export class DevicesController {
 
   @Get(':deviceId')
   @UseGuards(JwtAuthGuard)
-  async getDevices(
+  async getDevice(
     @AuthUser() user: JwtPayload,
     @Param('deviceId', ParseIntPipe) deviceId: number,
   ): Promise<DeviceDto> {
@@ -50,5 +51,19 @@ export class DevicesController {
     return devices.map((device) => {
       return DeviceDto.from(device);
     });
+  }
+
+  @Delete(':deviceId')
+  @UseGuards(JwtAuthGuard)
+  async deleteDevice(
+    @AuthUser() user: JwtPayload,
+    @Param('deviceId', ParseIntPipe) deviceId: number,
+  ): Promise<DeviceDto> {
+    const device = await this.devicesService.deleteDevice(
+      user.userId,
+      deviceId,
+    );
+    if (!device) throw new NotFoundException(`Device #${deviceId} not found`);
+    return DeviceDto.from(device);
   }
 }

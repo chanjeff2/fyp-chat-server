@@ -1,6 +1,7 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { KeysService } from 'src/keys/keys.service';
 import { Device, DeviceDocument } from 'src/models/device.model';
 import { User, UserDocument } from 'src/models/user.model';
 import { CreateDeviceDto } from './dto/create-device.dto';
@@ -10,6 +11,7 @@ export class DevicesService {
   constructor(
     @InjectModel(Device.name) private deviceModel: Model<DeviceDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject(forwardRef(() => KeysService)) private keysService: KeysService,
   ) {}
 
   async createDevice(
@@ -63,5 +65,20 @@ export class DevicesService {
       deviceId++;
     }
     return deviceId;
+  }
+
+  async deleteDevice(userId: string, deviceId: number): Promise<Device | null> {
+    const device = await this.getDevice(userId, deviceId);
+    if (!device) {
+      return null;
+    }
+    await this.deviceModel.findByIdAndDelete(device._id);
+    await this.keysService.removeAllOneTimeKeysOfOneDevice(userId, deviceId);
+    await this.userModel.findByIdAndUpdate(userId, {
+      $pull: {
+        devices: device._id,
+      },
+    });
+    return device;
   }
 }
