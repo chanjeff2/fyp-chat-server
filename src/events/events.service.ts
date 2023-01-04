@@ -53,8 +53,12 @@ export class EventsService {
       },
     };
 
-    const messageId = await admin.messaging().send(message);
-
-    return messageId;
+    try {
+      const messageId = await admin.messaging().send(message);
+      return messageId;
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
   }
 }
