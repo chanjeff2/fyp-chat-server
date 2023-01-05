@@ -3,6 +3,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { SendMessageDto } from './dto/send-message.dto';
+import { SendMessageResponse } from './dto/send-message.response.dto';
 import { EventsService } from './events.service';
 
 @Controller('events')
@@ -15,7 +16,7 @@ export class EventsController {
   async sendMessage(
     @AuthUser() user: JwtPayload,
     @Body() sendMessageDto: SendMessageDto,
-  ): Promise<void> {
-    await this.eventsService.sendMessage(user.userId, sendMessageDto);
+  ): Promise<SendMessageResponse> {
+    return await this.eventsService.sendMessage(user.userId, sendMessageDto);
   }
 }

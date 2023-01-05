@@ -4,69 +4,130 @@ import { MessageDto } from './dto/message.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import admin from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
+import { SendMessageResponse } from './dto/send-message.response.dto';
 
 @Injectable()
 export class EventsService {
   constructor(private devicesService: DevicesService) {}
 
   async sendMessage(
-    userId: string,
+    senderUserId: string,
     sendMessageDto: SendMessageDto,
-  ): Promise<string | null> {
-    const dto = new MessageDto();
-    dto.senderUserId = userId;
-    dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
-    dto.cipherTextType = sendMessageDto.cipherTextType.toString();
-    dto.content = sendMessageDto.content;
-    dto.sentAt = sendMessageDto.sentAt;
+  ): Promise<SendMessageResponse> {
+    const response = new SendMessageResponse();
 
-    // get recipient fcm token
-    const device = await this.devicesService.getDevice(
+    const targetedDeviceIds = sendMessageDto.messages.map(
+      (e) => e.recipientDeviceId,
+    );
+    const deviceIdToMessageMap = new Map(
+      sendMessageDto.messages.map((e) => [e.recipientDeviceId, e]),
+    );
+    const devicesToSend = new Set(targetedDeviceIds);
+
+    // check missing deviceIds
+    const recipientDevices = await this.devicesService.getAllDevices(
       sendMessageDto.recipientUserId,
-      sendMessageDto.recipientDeviceId,
+    );
+    const recipientDeviceIds = recipientDevices.map((e) => e.deviceId);
+    response.missingDeviceIds = recipientDeviceIds.filter(
+      // not targeted
+      (e) => !deviceIdToMessageMap.has(e),
+    );
+    // check removed devices
+    const recipientDeviceIdSet = new Set(recipientDeviceIds);
+    response.removedDeviceIds = targetedDeviceIds.filter(
+      // not in recipient device list
+      (e) => {
+        devicesToSend.delete(e);
+        return !recipientDeviceIdSet.has(e);
+      },
+    );
+    // check mis match (deviceId, registrationId)
+    response.misMatchDeviceIds = recipientDevices
+      .filter(
+        // only check for targeted devices
+        (e) => deviceIdToMessageMap.has(e.deviceId),
+      )
+      .filter(
+        // check for registrationId mis match
+        (e) => {
+          devicesToSend.delete(e.deviceId);
+          return (
+            e.registrationId !==
+            deviceIdToMessageMap.get(e.deviceId)?.recipientRegistrationId
+          );
+        },
+      )
+      .map((e) => e.deviceId);
+
+    const recipientDeviceMap = new Map(
+      recipientDevices.map((e) => [e.deviceId, e]),
     );
 
-    if (device === null) {
-      return null;
-    }
+    await Promise.all(
+      Array.from(devicesToSend).map(async (id) => {
+        const message = deviceIdToMessageMap.get(id);
+        if (!message) {
+          return; // how?
+        }
+        const dto = new MessageDto();
+        dto.senderUserId = senderUserId;
+        dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
+        dto.cipherTextType = message.cipherTextType.toString();
+        dto.content = message.content;
+        dto.sentAt = sendMessageDto.sentAt;
 
-    const message: Message = {
-      token: device.firebaseMessagingToken,
-      data: {
-        ...dto,
-      },
-      // Set Android priority to "high"
-      android: {
-        priority: 'high',
-      },
-      // Add APNS (Apple) config
-      apns: {
-        payload: {
-          aps: {
-            contentAvailable: true,
+        // get recipient fcm token
+        const device = recipientDeviceMap.get(id);
+        if (device == null) {
+          return; // again how?
+        }
+
+        const fcmMessage: Message = {
+          token: device.firebaseMessagingToken,
+          data: {
+            ...dto,
           },
-        },
-        headers: {
-          'apns-push-type': 'background',
-          'apns-priority': '5', // Must be `5` when `contentAvailable` is set to true.
-          'apns-topic': 'io.flutter.plugins.firebase.messaging', // bundle identifier
-        },
-      },
-    };
+          // Set Android priority to "high"
+          android: {
+            priority: 'high',
+          },
+          // Add APNS (Apple) config
+          apns: {
+            payload: {
+              aps: {
+                contentAvailable: true,
+              },
+            },
+            headers: {
+              'apns-push-type': 'background',
+              'apns-priority': '5', // Must be `5` when `contentAvailable` is set to true.
+              'apns-topic': 'io.flutter.plugins.firebase.messaging', // bundle identifier
+            },
+          },
+        };
 
-    try {
-      const messageId = await admin.messaging().send(message);
-      return messageId;
-    } catch (e) {
-      console.error(e);
-      if (
-        e.code === 'messaging/registration-token-not-registered' ||
-        e.code === 'messaging/invalid-argument'
-      ) {
-        // remove stale device
-        this.devicesService.deleteDevice(userId, sendMessageDto.senderDeviceId);
-      }
-      return null;
-    }
+        try {
+          const messageId = await admin.messaging().send(fcmMessage);
+          return messageId;
+        } catch (e) {
+          console.error(e);
+          if (
+            e.code === 'messaging/registration-token-not-registered' ||
+            e.code === 'messaging/invalid-argument'
+          ) {
+            // remove stale device
+            this.devicesService.deleteDevice(
+              sendMessageDto.recipientUserId,
+              device.deviceId,
+            );
+            response.removedDeviceIds.push(device.deviceId);
+          }
+          return;
+        }
+      }),
+    );
+
+    return response;
   }
 }

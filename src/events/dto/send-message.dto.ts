@@ -1,4 +1,12 @@
-import { IsDateString, IsInt, IsMongoId, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsDateString,
+  IsInt,
+  IsMongoId,
+  IsString,
+} from 'class-validator';
+import { IncomingMessageDto } from './incoming-message.dto';
 
 export class SendMessageDto {
   @IsInt()
@@ -7,14 +15,9 @@ export class SendMessageDto {
   @IsMongoId()
   recipientUserId: string;
 
-  @IsInt()
-  recipientDeviceId: number;
-
-  @IsInt()
-  cipherTextType: number;
-
-  @IsString()
-  content: string;
+  @IsArray()
+  @Type(() => IncomingMessageDto)
+  messages: IncomingMessageDto[];
 
   @IsDateString()
   sentAt: string; // iso string
