@@ -70,8 +70,6 @@ export class EventsService {
       recipientDevices.map((e) => [e.deviceId, e]),
     );
 
-    console.log(`devicesToSend ${Array.from(devicesToSend)}`);
-
     await Promise.all(
       Array.from(devicesToSend).map(async (id) => {
         const message = deviceIdToMessageMap.get(id);
