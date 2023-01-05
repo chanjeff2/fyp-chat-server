@@ -35,13 +35,15 @@ export class EventsService {
     );
     // check removed devices
     const recipientDeviceIdSet = new Set(recipientDeviceIds);
-    response.removedDeviceIds = targetedDeviceIds.filter(
-      // not in recipient device list
-      (e) => {
+    response.removedDeviceIds = targetedDeviceIds.filter((e) => {
+      if (!recipientDeviceIdSet.has(e)) {
+        // not in recipient device list
         devicesToSend.delete(e);
-        return !recipientDeviceIdSet.has(e);
-      },
-    );
+        return true;
+      } else {
+        return false;
+      }
+    });
     // check mis match (deviceId, registrationId)
     response.misMatchDeviceIds = recipientDevices
       .filter(
@@ -51,11 +53,15 @@ export class EventsService {
       .filter(
         // check for registrationId mis match
         (e) => {
-          devicesToSend.delete(e.deviceId);
-          return (
+          if (
             e.registrationId !==
             deviceIdToMessageMap.get(e.deviceId)?.recipientRegistrationId
-          );
+          ) {
+            devicesToSend.delete(e.deviceId);
+            return true;
+          } else {
+            return false;
+          }
         },
       )
       .map((e) => e.deviceId);
@@ -63,6 +69,8 @@ export class EventsService {
     const recipientDeviceMap = new Map(
       recipientDevices.map((e) => [e.deviceId, e]),
     );
+
+    console.log(`devicesToSend ${Array.from(devicesToSend)}`);
 
     await Promise.all(
       Array.from(devicesToSend).map(async (id) => {
