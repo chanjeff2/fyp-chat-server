@@ -79,6 +79,7 @@ export class EventsService {
         const dto = new MessageDto();
         dto.senderUserId = senderUserId;
         dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
+        dto.chatroomId = sendMessageDto.chatroomId;
         dto.cipherTextType = message.cipherTextType.toString();
         dto.content = message.content;
         dto.sentAt = sendMessageDto.sentAt;
