@@ -8,6 +8,9 @@ export class MessageDto {
   senderDeviceId: string; // fcm require all field to be string
 
   @IsString()
+  chatroomId: string;
+
+  @IsString()
   cipherTextType: string;
 
   @IsString()

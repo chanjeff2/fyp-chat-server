@@ -15,6 +15,9 @@ export class SendMessageDto {
   @IsMongoId()
   recipientUserId: string;
 
+  @IsString()
+  chatroomId: string;
+
   @IsArray()
   @Type(() => IncomingMessageDto)
   messages: IncomingMessageDto[];
