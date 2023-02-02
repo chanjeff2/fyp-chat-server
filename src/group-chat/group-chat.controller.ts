@@ -21,6 +21,12 @@ export class GroupChatController {
   constructor(private service: GroupChatService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get()
+  async getMyGroups(@AuthUser() user: JwtPayload): Promise<GroupDto[]> {
+    return await this.service.getGroupsOfUser(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':groupId')
   async getGroup(
     @AuthUser() user: JwtPayload,

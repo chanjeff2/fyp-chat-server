@@ -65,4 +65,12 @@ export class GroupChatService {
     groupDto.createdAt = group.createdAt.toISOString();
     return groupDto;
   }
+
+  async getGroupsOfUser(userId: string): Promise<GroupDto[]> {
+    const groupMembers = await this.groupMemberModel.find({ user: userId });
+    const groups = await Promise.all(
+      groupMembers.map((e) => this.getGroup(e.group as string)),
+    );
+    return groups.filter((e): e is GroupDto => e !== null);
+  }
 }
