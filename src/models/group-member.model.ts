@@ -30,6 +30,12 @@ export class GroupMember {
     required: true,
   })
   user: User | string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const GroupMemberSchema = SchemaFactory.createForClass(GroupMember);

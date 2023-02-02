@@ -8,6 +8,12 @@ export class Group {
 
   @Prop({ required: true })
   name: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group);
