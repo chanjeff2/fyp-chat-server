@@ -10,6 +10,7 @@ import { DevicesModule } from './devices/devices.module';
 import { KeysModule } from './keys/keys.module';
 import { HeartbeatModule } from './heartbeat/heartbeat.module';
 import { EventsModule } from './events/events.module';
+import { GroupChatModule } from './group-chat/group-chat.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EventsModule } from './events/events.module';
     KeysModule,
     HeartbeatModule,
     EventsModule,
+    GroupChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
