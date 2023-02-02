@@ -14,7 +14,6 @@ import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { Role } from 'src/models/group-member.model';
 import { CreateGroupDto } from './dto/create-croup.dto';
 import { GroupDto } from './dto/group.dto';
-import { JoinGroupDto } from './dto/join-group.dto';
 import { GroupChatService } from './group-chat.service';
 
 @Controller('group-chat')
