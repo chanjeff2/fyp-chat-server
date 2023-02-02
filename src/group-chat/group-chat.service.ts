@@ -62,6 +62,7 @@ export class GroupChatService {
     groupDto.members = memberDtos.filter(
       (e): e is GroupMemberDto => e !== null,
     );
+    groupDto.createdAt = group.createdAt.toISOString();
     return groupDto;
   }
 }
