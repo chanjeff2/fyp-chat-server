@@ -31,10 +31,7 @@ export class GroupChatController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':groupId')
-  async getGroup(
-    @AuthUser() user: JwtPayload,
-    @Param('groupId') groupId: string,
-  ): Promise<GroupDto> {
+  async getGroup(@Param('groupId') groupId: string): Promise<GroupDto> {
     const group = await this.service.getGroup(groupId);
     if (!group) {
       throw new NotFoundException(`Group #${groupId} not found`);
@@ -49,7 +46,7 @@ export class GroupChatController {
     @Body() dto: CreateGroupDto,
   ): Promise<GroupDto> {
     const group = await this.service.createGroup(dto);
-    const me = await this.service.addMember({
+    await this.service.addMember({
       group: group._id,
       user: user.userId,
       role: Role.Admin,
@@ -65,7 +62,7 @@ export class GroupChatController {
     @Param('groupId') groupId: string,
   ): Promise<GroupDto> {
     try {
-      const groupMember = await this.service.addMember({
+      await this.service.addMember({
         group: groupId,
         user: user.userId,
         role: Role.Member,
@@ -86,12 +83,11 @@ export class GroupChatController {
   @Roles(Role.Admin)
   @Post(':groupId/invite')
   async inviteToGroup(
-    @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
     @Body() dto: { userId: string },
   ): Promise<GroupDto> {
     try {
-      const groupMember = await this.service.addMember({
+      await this.service.addMember({
         group: groupId,
         user: dto.userId,
         role: Role.Member,
