@@ -82,19 +82,18 @@ export class GroupChatController {
     return groupDto;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Post(':groupId/invite')
   async inviteToGroup(
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
-    @Body() dto: { target: string },
+    @Body() dto: { userId: string },
   ): Promise<GroupDto> {
     try {
       const groupMember = await this.service.addMember({
         group: groupId,
-        user: user.userId,
+        user: dto.userId,
         role: Role.Member,
       });
     } catch (e: unknown) {
