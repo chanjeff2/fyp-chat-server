@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import {
   GroupMember,
   GroupMemberDocument,
+  Role,
 } from 'src/models/group-member.model';
 import { Group, GroupDocument } from 'src/models/group.model';
 import { UserProfileDto } from 'src/users/dto/user-profile.dto';
@@ -72,5 +73,13 @@ export class GroupChatService {
       groupMembers.map((e) => this.getGroup(e.group as string)),
     );
     return groups.filter((e): e is GroupDto => e !== null);
+  }
+
+  async getRoleOfMember(groupId: string, userId: string): Promise<Role | null> {
+    const member = await this.groupMemberModel.findOne({
+      group: groupId,
+      user: userId,
+    });
+    return member?.role ?? null;
   }
 }
