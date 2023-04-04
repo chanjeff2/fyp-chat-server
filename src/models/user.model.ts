@@ -14,6 +14,9 @@ export class User {
   @Prop()
   displayName?: string;
 
+  @Prop()
+  status?: string;
+
   @Prop({ required: true })
   passwordHash: string;
 

@@ -18,6 +18,11 @@ export class AccountDto {
   @Expose()
   displayName?: string;
 
+  @IsString()
+  @IsOptional()
+  @Expose()
+  status?: string;
+
   static from(user: User): AccountDto {
     return plainToInstance(AccountDto, user);
   }

@@ -17,6 +17,10 @@ export class UserProfileDto {
   @Expose()
   displayName: string;
 
+  @IsString()
+  @Expose()
+  status: string;
+
   static from(user: User) {
     return plainToClass(UserProfileDto, user);
   }
