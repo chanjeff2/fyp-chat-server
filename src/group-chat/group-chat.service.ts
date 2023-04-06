@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EventsService } from 'src/events/events.service';
 import {
   GroupMember,
   GroupMemberDocument,
@@ -21,12 +22,35 @@ export class GroupChatService {
     @InjectModel(GroupMember.name)
     private groupMemberModel: Model<GroupMemberDocument>,
     private usersService: UsersService,
+    private eventsService: EventsService,
   ) {}
 
   async createGroup(createGroupDto: CreateGroupDto): Promise<Group> {
     return await this.groupModel.create(createGroupDto);
   }
 
+  // will send invitation to device
+  async inviteMember(
+    senderUserId: string,
+    recipientUserId: string,
+    chatroomId: string,
+    sentAt: string,
+  ): Promise<GroupMember> {
+    let member = await this.addMember({
+      user: recipientUserId,
+      group: chatroomId,
+      role: Role.Member,
+    });
+    await this.eventsService.sendInvitation(
+      senderUserId,
+      recipientUserId,
+      chatroomId,
+      sentAt,
+    );
+    return member;
+  }
+
+  // will NOT send invitation to device
   async addMember(dto: JoinGroupDto): Promise<GroupMember> {
     const exists = await this.groupMemberModel.exists({
       user: dto.user,

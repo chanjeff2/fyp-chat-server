@@ -7,5 +7,6 @@ import { EventsService } from './events.service';
   imports: [DevicesModule],
   controllers: [EventsController],
   providers: [EventsService],
+  exports: [EventsService],
 })
 export class EventsModule {}

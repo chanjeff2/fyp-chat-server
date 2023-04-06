@@ -18,6 +18,7 @@ import { CreateGroupDto } from './dto/create-croup.dto';
 import { GroupDto } from './dto/group.dto';
 import { GroupChatService } from './group-chat.service';
 import { RolesGuard } from '../guards/roles.guard';
+import { sendInvitationDto } from 'src/events/dto/send-invitation.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -83,15 +84,17 @@ export class GroupChatController {
   @Roles(Role.Admin)
   @Post(':groupId/invite')
   async inviteToGroup(
+    @AuthUser() sender: JwtPayload,
     @Param('groupId') groupId: string,
-    @Body() dto: { userId: string },
+    @Body() dto: sendInvitationDto,
   ): Promise<GroupDto> {
     try {
-      await this.service.addMember({
-        group: groupId,
-        user: dto.userId,
-        role: Role.Member,
-      });
+      await this.service.inviteMember(
+        sender.userId,
+        dto.target,
+        groupId,
+        dto.sentAt,
+      );
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new BadRequestException(e.message);

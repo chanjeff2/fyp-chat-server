@@ -1,20 +1,12 @@
 import { IsDateString, IsMongoId, IsString } from 'class-validator';
+import { FCMEvent } from './fcm-event';
 
-export class MessageDto {
+export abstract class ChatroomEvent extends FCMEvent {
   @IsMongoId()
   senderUserId: string;
-
-  @IsString()
-  senderDeviceId: string; // fcm require all field to be string
-
+  
   @IsString()
   chatroomId: string;
-
-  @IsString()
-  cipherTextType: string;
-
-  @IsString()
-  content: string;
 
   @IsDateString()
   sentAt: string; // iso string
