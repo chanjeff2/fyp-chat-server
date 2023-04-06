@@ -5,7 +5,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 import admin from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
 import { SendMessageResponse } from './dto/send-message.response.dto';
-import { InvitationDto } from './dto/invitation.dto';
+import { MemberInvitationDto } from './dto/member-invitation.dto';
 
 @Injectable()
 export class EventsService {
@@ -149,14 +149,16 @@ export class EventsService {
     return response;
   }
 
+  /// broardcast the invitation, assuming the new member is already added to group
   async sendInvitation(
     senderUserId: string,
     recipientUserId: string,
     chatroomId: string,
     sentAt: string,
   ): Promise<void> {
-    const dto = new InvitationDto();
+    const dto = new MemberInvitationDto();
     dto.senderUserId = senderUserId;
+    dto.recipientUserId = recipientUserId;
     dto.chatroomId = chatroomId;
     dto.sentAt = sentAt;
 

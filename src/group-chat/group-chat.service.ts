@@ -41,11 +41,17 @@ export class GroupChatService {
       group: chatroomId,
       role: Role.Member,
     });
-    await this.eventsService.sendInvitation(
-      senderUserId,
-      recipientUserId,
-      chatroomId,
-      sentAt,
+    // broadcast the event to every member in the group
+    const members = await this.getMembersOfGroup(chatroomId);
+    await Promise.all(
+      members.map(async (member) => {
+        await this.eventsService.sendInvitation(
+          senderUserId,
+          member._id,
+          chatroomId,
+          sentAt,
+        );
+      }),
     );
     return member;
   }
@@ -67,7 +73,7 @@ export class GroupChatService {
     if (!group) {
       return null;
     }
-    const members = await this.groupMemberModel.find({ group: groupId });
+    const members = await this.getMembersOfGroup(groupId);
     const memberDtos = await Promise.all(
       members.map(async (member) => {
         const user = await this.usersService.getUserById(member.user as string);
@@ -91,6 +97,11 @@ export class GroupChatService {
     return groupDto;
   }
 
+  /// return members of a group given group Id
+  async getMembersOfGroup(groupId: string): Promise<GroupMember[]> {
+    return await this.groupMemberModel.find({ group: groupId });
+  }
+
   async getGroupsOfUser(userId: string): Promise<GroupDto[]> {
     const groupMembers = await this.groupMemberModel.find({ user: userId });
     const groups = await Promise.all(
@@ -99,11 +110,40 @@ export class GroupChatService {
     return groups.filter((e): e is GroupDto => e !== null);
   }
 
-  async getRoleOfMember(groupId: string, userId: string): Promise<Role | null> {
+  async getGroupMember(
+    groupId: string,
+    userId: string,
+  ): Promise<GroupMember | null> {
     const member = await this.groupMemberModel.findOne({
       group: groupId,
       user: userId,
     });
+    return member;
+  }
+
+  async getGroupMemberDto(
+    groupId: string,
+    userId: string,
+  ): Promise<GroupMemberDto | null> {
+    const member = await this.groupMemberModel.findOne({
+      group: groupId,
+      user: userId,
+    });
+    if (member == null) {
+      return null;
+    }
+    const dto = new GroupMemberDto();
+    const user = await this.usersService.getUserById(member.user as string);
+    if (user == null) {
+      return null;
+    }
+    dto.user = UserProfileDto.from(user);
+    dto.role = member.role;
+    return dto;
+  }
+
+  async getRoleOfMember(groupId: string, userId: string): Promise<Role | null> {
+    const member = await this.getGroupMember(groupId, userId);
     return member?.role ?? null;
   }
 }

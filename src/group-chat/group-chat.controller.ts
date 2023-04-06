@@ -19,6 +19,7 @@ import { GroupDto } from './dto/group.dto';
 import { GroupChatService } from './group-chat.service';
 import { RolesGuard } from '../guards/roles.guard';
 import { sendInvitationDto } from 'src/events/dto/send-invitation.dto';
+import { GroupMemberDto } from './dto/group-member.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -38,6 +39,21 @@ export class GroupChatController {
       throw new NotFoundException(`Group #${groupId} not found`);
     }
     return group;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':groupId/member/:userId')
+  async getGroupMember(
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+  ): Promise<GroupMemberDto> {
+    const groupMember = await this.service.getGroupMemberDto(groupId, userId);
+    if (!groupMember) {
+      throw new NotFoundException(
+        `Group member #${userId} in group #${groupId} not found`,
+      );
+    }
+    return groupMember;
   }
 
   @UseGuards(JwtAuthGuard)
