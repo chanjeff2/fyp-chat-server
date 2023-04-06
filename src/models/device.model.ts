@@ -21,6 +21,12 @@ export class Device {
 
   @Prop({ required: true })
   firebaseMessagingToken: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

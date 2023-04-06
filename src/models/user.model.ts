@@ -14,6 +14,9 @@ export class User {
   @Prop()
   displayName?: string;
 
+  @Prop()
+  status?: string;
+
   @Prop({ required: true })
   passwordHash: string;
 
@@ -25,6 +28,12 @@ export class User {
 
   @Prop()
   refreshToken?: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

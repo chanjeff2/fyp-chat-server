@@ -7,5 +7,9 @@ export class UpdateUserDto {
 
   @IsString()
   @IsOptional()
+  status?: string;
+
+  @IsString()
+  @IsOptional()
   refreshToken?: string | null;
 }
