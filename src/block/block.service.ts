@@ -36,4 +36,12 @@ export class BlockService {
     });
     return blocks.map((block) => block.chatroomId);
   }
+
+  async isBlocked(me: string, chatroomId: string): Promise<boolean> {
+    const exists = await this.blockModel.exists({
+      userId: me,
+      chatroomId: chatroomId,
+    });
+    return exists != null;
+  }
 }

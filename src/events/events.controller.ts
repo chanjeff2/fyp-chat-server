@@ -5,6 +5,7 @@ import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { SendMessageDto } from './dto/send-message.dto';
 import { SendMessageResponse } from './dto/send-message.response.dto';
 import { EventsService } from './events.service';
+import { BlockedChatroomGuard } from 'src/guards/blocked-chatroom.guard';
 
 @Controller('events')
 export class EventsController {
@@ -12,7 +13,7 @@ export class EventsController {
 
   @Post('message')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, BlockedChatroomGuard)
   async sendMessage(
     @AuthUser() user: JwtPayload,
     @Body() sendMessageDto: SendMessageDto,

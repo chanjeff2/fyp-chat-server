@@ -10,5 +10,6 @@ import { BlockService } from './block.service';
   ],
   controllers: [BlockController],
   providers: [BlockService],
+  exports: [BlockService],
 })
 export class BlockModule {}
