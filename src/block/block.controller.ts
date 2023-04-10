@@ -26,14 +26,7 @@ export class BlockController {
     @AuthUser() user: JwtPayload,
     @Param('chatroomId') chatroomId: string,
   ): Promise<void> {
-    try {
-      await this.service.blockChatroom(user.userId, chatroomId);
-    } catch (e) {
-      if (e instanceof Error) {
-        throw new BadRequestException(e.message);
-      }
-      throw e;
-    }
+    await this.service.blockChatroom(user.userId, chatroomId);
   }
 
   @Delete(':chatroomId')

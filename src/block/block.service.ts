@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -18,7 +18,7 @@ export class BlockService {
       chatroomId: chatroomId,
     });
     if (exists) {
-      throw new Error(`already blocked chatroom #${chatroomId}`);
+      throw new BadRequestException(`already blocked chatroom #${chatroomId}`);
     }
     return await this.blockModel.create({
       userId: me,

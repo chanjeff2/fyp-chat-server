@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
@@ -97,21 +98,17 @@ export class GroupChatController {
   //   return groupDto;
   // }
 
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Post(':groupId/leave')
   async leaveGroup(
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
   ): Promise<void> {
-    try {
-      await this.service.removeMember(user.userId, groupId);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new BadRequestException(e.message);
-      }
-    }
+    await this.service.removeMember(user.userId, groupId);
   }
 
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Post(':groupId/access-control')
@@ -120,13 +117,7 @@ export class GroupChatController {
     @Param('groupId') groupId: string,
     @Body() dto: SendAccessControlDto,
   ): Promise<GroupDto> {
-    try {
-      await this.service.accessControl(sender.userId, groupId, dto);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new BadRequestException(e.message);
-      }
-    }
+    await this.service.accessControl(sender.userId, groupId, dto);
     const groupDto = await this.service.getGroup(groupId);
     if (!groupDto) {
       throw new NotFoundException(`Group #${groupId} not found`);

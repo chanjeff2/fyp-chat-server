@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FCMEventType } from 'src/enums/fcm-event-type.enum';
@@ -93,15 +97,15 @@ export class GroupChatService {
       group: dto.chatroomId,
     });
     if (exists) {
-      throw new Error('already joined group');
+      throw new BadRequestException('already joined group');
     }
     const userExists = await this.usersService.isUserExist(dto.userId);
     if (!userExists) {
-      throw new Error('user not found');
+      throw new NotFoundException('user not found');
     }
     const chatroomExists = await this.isGroupExists(dto.chatroomId);
     if (!chatroomExists) {
-      throw new Error('chatroom not found');
+      throw new NotFoundException('chatroom not found');
     }
     return await this.groupMemberModel.create({
       user: dto.userId,
@@ -117,7 +121,7 @@ export class GroupChatService {
       group: chatroomId,
     });
     if (member.deletedCount == 0) {
-      throw new Error('group member not found');
+      throw new NotFoundException('group member not found');
     }
   }
 
@@ -136,6 +140,9 @@ export class GroupChatService {
       },
       { new: true },
     );
+    if (member == null) {
+      throw new NotFoundException('group member not found');
+    }
     return member;
   }
 
