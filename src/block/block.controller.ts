@@ -13,6 +13,7 @@ import { AuthUser } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { BlockService } from './block.service';
+import { TrustWorthyDto } from './dto/trust-worthy.dto';
 
 @Controller('block')
 export class BlockController {
@@ -55,5 +56,12 @@ export class BlockController {
     @AuthUser() user: JwtPayload,
   ): Promise<string[]> {
     return this.service.getAllBlockedChatrooms(user.userId);
+  }
+
+  @Get(':chatroomId/trustworthy')
+  async isChatroomTrustWorthy(
+    @Param('chatroomId') chatroomId: string,
+  ): Promise<TrustWorthyDto> {
+    return await this.service.isChatroomTrustWorthy(chatroomId);
   }
 }

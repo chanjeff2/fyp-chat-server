@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Block, BlockDocument } from 'src/models/block.model';
+import { TrustWorthyDto } from './dto/trust-worthy.dto';
 
 @Injectable()
 export class BlockService {
   constructor(
     @InjectModel(Block.name) private blockModel: Model<BlockDocument>,
+    private configService: ConfigService,
   ) {}
 
   async blockChatroom(me: string, chatroomId: string): Promise<Block> {
@@ -43,5 +46,22 @@ export class BlockService {
       chatroomId: chatroomId,
     });
     return exists != null;
+  }
+
+  async getAmountOfBlocks(chatroomId: string): Promise<number> {
+    console.log(chatroomId);
+    return await this.blockModel.count({
+      chatroomId: chatroomId,
+    });
+  }
+
+  async isChatroomTrustWorthy(chatroomId: string): Promise<TrustWorthyDto> {
+    const count = await this.getAmountOfBlocks(chatroomId);
+    console.log(count);
+    const threshold = this.configService.get<number>('BLOCK_AMOUNT') ?? 1;
+    const dto = new TrustWorthyDto();
+    dto.chatroomId = chatroomId;
+    dto.isTrustWorthy = count < threshold;
+    return dto;
   }
 }
