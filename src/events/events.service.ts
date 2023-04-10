@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DevicesService } from 'src/devices/devices.service';
-import { TextMessageDto } from './dto/text-message.dto';
+import { MessageDto } from './dto/message.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import admin from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
 import { SendMessageResponse } from './dto/send-message.response.dto';
-import { MemberInvitationDto } from './dto/member-invitation.dto';
+import { AccessControlDto } from '../group-chat/dto/access-control.dto';
+import { SendAccessControlDto } from 'src/group-chat/dto/send-access-control.dto';
+import { FCMEventType } from 'src/enums/fcm-event-type.enum';
 
 @Injectable()
 export class EventsService {
@@ -106,7 +108,8 @@ export class EventsService {
         if (!message) {
           return; // how?
         }
-        const dto = new TextMessageDto();
+        const dto = new MessageDto();
+        dto.type = FCMEventType.TextMessage;
         dto.senderUserId = senderUserId;
         dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
         dto.chatroomId = sendMessageDto.chatroomId;
@@ -149,6 +152,45 @@ export class EventsService {
     return response;
   }
 
+  async sendAccessControlEvent(
+    senderUserId: string,
+    recipientUserId: string,
+    chatroomId: string,
+    event: SendAccessControlDto,
+  ): Promise<void> {
+    const dto = new AccessControlDto();
+    dto.type = event.type;
+    dto.senderUserId = senderUserId;
+    dto.targetUserId = event.targetUserId;
+    dto.chatroomId = chatroomId;
+    dto.sentAt = event.sentAt;
+
+    const recipientDevices = await this.devicesService.getAllDevices(
+      recipientUserId,
+    );
+    await Promise.all(
+      recipientDevices.map(async (device) => {
+        const fcmMessage: Message = this.createFcmMessage(
+          device.firebaseMessagingToken,
+          { ...dto },
+        );
+        try {
+          const messageId = await admin.messaging().send(fcmMessage);
+          return messageId;
+        } catch (e) {
+          console.error(e);
+          if (
+            e.code === 'messaging/registration-token-not-registered' ||
+            e.code === 'messaging/invalid-argument'
+          ) {
+            // remove stale device
+            this.devicesService.deleteDevice(recipientUserId, device.deviceId);
+          }
+        }
+      }),
+    );
+  }
+
   /// broardcast the invitation, assuming the new member is already added to group
   async sendInvitation(
     senderUserId: string,
@@ -156,9 +198,10 @@ export class EventsService {
     chatroomId: string,
     sentAt: string,
   ): Promise<void> {
-    const dto = new MemberInvitationDto();
+    const dto = new AccessControlDto();
+    dto.type = FCMEventType.AddMember;
     dto.senderUserId = senderUserId;
-    dto.recipientUserId = recipientUserId;
+    dto.targetUserId = recipientUserId;
     dto.chatroomId = chatroomId;
     dto.sentAt = sentAt;
 

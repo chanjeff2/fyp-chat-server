@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { FCMEventType } from 'src/enums/fcm-event-type.enum';
 import { EventsService } from 'src/events/events.service';
 import {
   GroupMember,
@@ -10,10 +11,11 @@ import {
 import { Group, GroupDocument } from 'src/models/group.model';
 import { UserProfileDto } from 'src/users/dto/user-profile.dto';
 import { UsersService } from 'src/users/users.service';
-import { CreateGroupDto } from './dto/create-croup.dto';
+import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { GroupDto } from './dto/group.dto';
 import { JoinGroupDto } from './dto/join-group.dto';
+import { SendAccessControlDto } from './dto/send-access-control.dto';
 
 @Injectable()
 export class GroupChatService {
@@ -25,47 +27,116 @@ export class GroupChatService {
     private eventsService: EventsService,
   ) {}
 
+  async isGroupExists(id: string): Promise<boolean> {
+    const doc = await this.groupModel.exists({ _id: id });
+    return doc != null;
+  }
+
   async createGroup(createGroupDto: CreateGroupDto): Promise<Group> {
     return await this.groupModel.create(createGroupDto);
   }
 
   // will send invitation to device
-  async inviteMember(
+  async accessControl(
     senderUserId: string,
-    recipientUserId: string,
     chatroomId: string,
-    sentAt: string,
-  ): Promise<GroupMember> {
-    let member = await this.addMember({
-      user: recipientUserId,
-      group: chatroomId,
-      role: Role.Member,
-    });
+    dto: SendAccessControlDto,
+  ) {
+    // perform access control event
+    switch (dto.type) {
+      case FCMEventType.AddMember:
+        await this.addMember({
+          userId: dto.targetUserId,
+          chatroomId: chatroomId,
+          role: Role.Member,
+        });
+        break;
+      case FCMEventType.KickMember:
+        await this.removeMember(dto.targetUserId, chatroomId);
+        break;
+      case FCMEventType.PromoteAdmin:
+        await this.updateRole(dto.targetUserId, chatroomId, Role.Admin);
+        break;
+      case FCMEventType.DemoteAdmin:
+        await this.updateRole(dto.targetUserId, chatroomId, Role.Member);
+        break;
+      default:
+        break;
+    }
+    // broadcast the event to every member in the group
+    await this.broadcastAccessControlEvent(senderUserId, chatroomId, dto);
+  }
+
+  private async broadcastAccessControlEvent(
+    senderUserId: string,
+    chatroomId: string,
+    event: SendAccessControlDto,
+  ) {
     // broadcast the event to every member in the group
     const members = await this.getMembersOfGroup(chatroomId);
     await Promise.all(
       members.map(async (member) => {
-        await this.eventsService.sendInvitation(
+        await this.eventsService.sendAccessControlEvent(
           senderUserId,
           member._id,
           chatroomId,
-          sentAt,
+          event,
         );
       }),
     );
-    return member;
   }
 
   // will NOT send invitation to device
   async addMember(dto: JoinGroupDto): Promise<GroupMember> {
     const exists = await this.groupMemberModel.exists({
-      user: dto.user,
-      group: dto.group,
+      user: dto.userId,
+      group: dto.chatroomId,
     });
     if (exists) {
       throw new Error('already joined group');
     }
-    return await this.groupMemberModel.create(dto);
+    const userExists = await this.usersService.isUserExist(dto.userId);
+    if (!userExists) {
+      throw new Error('user not found');
+    }
+    const chatroomExists = await this.isGroupExists(dto.chatroomId);
+    if (!chatroomExists) {
+      throw new Error('chatroom not found');
+    }
+    return await this.groupMemberModel.create({
+      user: dto.userId,
+      group: dto.chatroomId,
+      role: dto.role,
+    });
+  }
+
+  // will NOT send notification to device
+  async removeMember(userId: string, chatroomId: string): Promise<void> {
+    const member = await this.groupMemberModel.deleteOne({
+      user: userId,
+      group: chatroomId,
+    });
+    if (member.deletedCount == 0) {
+      throw new Error('group member not found');
+    }
+  }
+
+  async updateRole(
+    userId: string,
+    chatroomId: string,
+    role: Role,
+  ): Promise<GroupMember | null> {
+    const member = await this.groupMemberModel.findOneAndUpdate(
+      {
+        user: userId,
+        group: chatroomId,
+      },
+      {
+        role: role,
+      },
+      { new: true },
+    );
+    return member;
   }
 
   async getGroup(groupId: string): Promise<GroupDto | null> {

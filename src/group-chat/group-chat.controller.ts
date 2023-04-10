@@ -14,12 +14,13 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { Role } from 'src/models/group-member.model';
-import { CreateGroupDto } from './dto/create-croup.dto';
+import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupDto } from './dto/group.dto';
 import { GroupChatService } from './group-chat.service';
 import { RolesGuard } from '../guards/roles.guard';
-import { sendInvitationDto } from 'src/events/dto/send-invitation.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
+import { AccessControlDto } from './dto/access-control.dto';
+import { SendAccessControlDto } from './dto/send-access-control.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -64,53 +65,63 @@ export class GroupChatController {
   ): Promise<GroupDto> {
     const group = await this.service.createGroup(dto);
     await this.service.addMember({
-      group: group._id,
-      user: user.userId,
+      chatroomId: group._id,
+      userId: user.userId,
       role: Role.Admin,
     });
     const groupDto = await this.service.getGroup(group._id);
     return groupDto!!;
   }
 
+  // @UseGuards(JwtAuthGuard)
+  // @Post(':groupId/join')
+  // async joinGroup(
+  //   @AuthUser() user: JwtPayload,
+  //   @Param('groupId') groupId: string,
+  // ): Promise<GroupDto> {
+  //   try {
+  //     await this.service.addMember({
+  //       group: groupId,
+  //       user: user.userId,
+  //       role: Role.Member,
+  //     });
+  //   } catch (e: unknown) {
+  //     if (e instanceof Error) {
+  //       throw new BadRequestException(e.message);
+  //     }
+  //   }
+  //   const groupDto = await this.service.getGroup(groupId);
+  //   if (!groupDto) {
+  //     throw new NotFoundException(`Group #${groupId} not found`);
+  //   }
+  //   return groupDto;
+  // }
+
   @UseGuards(JwtAuthGuard)
-  @Post(':groupId')
-  async joinGroup(
+  @Post(':groupId/leave')
+  async leaveGroup(
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
-  ): Promise<GroupDto> {
+  ): Promise<void> {
     try {
-      await this.service.addMember({
-        group: groupId,
-        user: user.userId,
-        role: Role.Member,
-      });
+      await this.service.removeMember(user.userId, groupId);
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new BadRequestException(e.message);
       }
     }
-    const groupDto = await this.service.getGroup(groupId);
-    if (!groupDto) {
-      throw new NotFoundException(`Group #${groupId} not found`);
-    }
-    return groupDto;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
-  @Post(':groupId/invite')
-  async inviteToGroup(
+  @Post(':groupId/access-control')
+  async accessControl(
     @AuthUser() sender: JwtPayload,
     @Param('groupId') groupId: string,
-    @Body() dto: sendInvitationDto,
+    @Body() dto: SendAccessControlDto,
   ): Promise<GroupDto> {
     try {
-      await this.service.inviteMember(
-        sender.userId,
-        dto.target,
-        groupId,
-        dto.sentAt,
-      );
+      await this.service.accessControl(sender.userId, groupId, dto);
     } catch (e: unknown) {
       if (e instanceof Error) {
         throw new BadRequestException(e.message);

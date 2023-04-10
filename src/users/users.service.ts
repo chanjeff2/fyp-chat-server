@@ -24,7 +24,12 @@ export class UsersService {
     return user;
   }
 
-  async isUserExist(username: string): Promise<boolean> {
+  async isUserExist(userId: string): Promise<boolean> {
+    const doc = await this.userModel.exists({ _id: userId });
+    return doc != null;
+  }
+
+  async isUsernameExist(username: string): Promise<boolean> {
     const doc = await this.userModel.exists({ username: username });
     return doc != null;
   }

@@ -3,10 +3,10 @@ import { Role } from 'src/models/group-member.model';
 
 export class JoinGroupDto {
   @IsMongoId()
-  group: string;
+  chatroomId: string;
 
   @IsMongoId()
-  user: string;
+  userId: string;
 
   @IsEnum(Role)
   role: Role;

@@ -49,7 +49,6 @@ export class BlockService {
   }
 
   async getAmountOfBlocks(chatroomId: string): Promise<number> {
-    console.log(chatroomId);
     return await this.blockModel.count({
       chatroomId: chatroomId,
     });
@@ -57,7 +56,6 @@ export class BlockService {
 
   async isChatroomTrustWorthy(chatroomId: string): Promise<TrustWorthyDto> {
     const count = await this.getAmountOfBlocks(chatroomId);
-    console.log(count);
     const threshold = this.configService.get<number>('BLOCK_AMOUNT') ?? 1;
     const dto = new TrustWorthyDto();
     dto.chatroomId = chatroomId;
