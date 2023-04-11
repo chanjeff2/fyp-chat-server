@@ -12,6 +12,7 @@ import { HeartbeatModule } from './heartbeat/heartbeat.module';
 import { EventsModule } from './events/events.module';
 import { GroupChatModule } from './group-chat/group-chat.module';
 import { BlockModule } from './block/block.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { BlockModule } from './block/block.module';
     EventsModule,
     GroupChatModule,
     BlockModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
