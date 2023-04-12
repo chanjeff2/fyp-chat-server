@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FileDocument, FileModel } from 'src/models/file.model';
@@ -18,8 +18,18 @@ export class MediaService {
     await ref.save(file.buffer);
     const fileRecord = await this.fileModel.create({
       name: file.originalname,
-      publicUrl: ref.publicUrl(),
+      path: docPath,
     });
     return fileRecord;
+  }
+
+  async getFile(fileId: string): Promise<Buffer> {
+    const fileRecord = await this.fileModel.findById(fileId);
+    if (!fileRecord) {
+      throw new NotFoundException(`File #${fileId} not found.`);
+    }
+    const ref = admin.storage().bucket().file(fileRecord.path);
+    const doc = await ref.download();
+    return doc[0];
   }
 }

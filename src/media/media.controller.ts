@@ -1,6 +1,9 @@
 import {
   Controller,
+  Get,
+  Param,
   Post,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,5 +25,13 @@ export class MediaController {
   ): Promise<FileDto> {
     const uploadedFile = await this.service.uploadFile(file);
     return FileDto.from(uploadedFile);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors()
+  async getFile(@Param('id') id: string): Promise<StreamableFile> {
+    const file = await this.service.getFile(id);
+    return new StreamableFile(file);
   }
 }

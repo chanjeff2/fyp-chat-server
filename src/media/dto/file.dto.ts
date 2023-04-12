@@ -13,10 +13,6 @@ export class FileDto {
   @Expose()
   name: string;
 
-  @IsString()
-  @Expose()
-  publicUrl: string;
-
   static from(file: FileModel): FileDto {
     return plainToClass(FileDto, file);
   }

@@ -10,7 +10,7 @@ export class FileModel {
   name: string;
 
   @Prop({ required: true })
-  publicUrl: string;
+  path: string;
 
   @Prop()
   createdAt: Date;
