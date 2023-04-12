@@ -20,6 +20,7 @@ import { GroupMemberDto } from './dto/group-member.dto';
 import { GroupDto } from './dto/group.dto';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 
 @Injectable()
 export class GroupChatService {
@@ -165,14 +166,22 @@ export class GroupChatService {
         return groupMemberDto;
       }),
     );
-    const groupDto = new GroupDto();
-    groupDto._id = group._id;
-    groupDto.name = group.name;
+    const groupDto = GroupDto.from(group);
     groupDto.members = memberDtos.filter(
       (e): e is GroupMemberDto => e !== null,
     );
     groupDto.createdAt = group.createdAt.toISOString();
     return groupDto;
+  }
+
+  async patchGroup(groupId: string, dto: UpdateGroupDto): Promise<Group> {
+    const group = await this.groupModel.findByIdAndUpdate(groupId, dto, {
+      new: true,
+    });
+    if (!group) {
+      throw new NotFoundException(`group #${groupId} not found.`);
+    }
+    return group;
   }
 
   /// return members of a group given group Id

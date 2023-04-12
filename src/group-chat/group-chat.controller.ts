@@ -1,13 +1,12 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
   NotFoundException,
   Param,
+  Patch,
   Post,
-  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -20,8 +19,8 @@ import { GroupDto } from './dto/group.dto';
 import { GroupChatService } from './group-chat.service';
 import { RolesGuard } from '../guards/roles.guard';
 import { GroupMemberDto } from './dto/group-member.dto';
-import { AccessControlDto } from './dto/access-control.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -41,6 +40,22 @@ export class GroupChatController {
       throw new NotFoundException(`Group #${groupId} not found`);
     }
     return group;
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Patch(':groupId')
+  async patchGroup(
+    @Param('groupId') groupId: string,
+    @Body() dto: UpdateGroupDto,
+  ): Promise<GroupDto> {
+    await this.service.patchGroup(groupId, dto);
+    const groupDto = await this.service.getGroup(groupId);
+    if (!groupDto) {
+      // how??
+      throw new NotFoundException(`group #${groupId} not found.`);
+    }
+    return groupDto;
   }
 
   @UseGuards(JwtAuthGuard)

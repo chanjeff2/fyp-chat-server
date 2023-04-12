@@ -10,6 +10,9 @@ export class Group {
   name: string;
 
   @Prop()
+  description?: string;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()
