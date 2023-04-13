@@ -18,5 +18,6 @@ import { GroupChatService } from './group-chat.service';
   ],
   controllers: [GroupChatController],
   providers: [GroupChatService],
+  exports: [GroupChatService],
 })
 export class GroupChatModule {}

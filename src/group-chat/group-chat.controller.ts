@@ -21,7 +21,6 @@ import { RolesGuard } from '../guards/roles.guard';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
-import { Group } from 'src/models/group.model';
 import { GroupInfoDto } from './dto/group-info.dto';
 
 @Controller('group-chat')

@@ -13,6 +13,7 @@ import { EventsModule } from './events/events.module';
 import { GroupChatModule } from './group-chat/group-chat.module';
 import { BlockModule } from './block/block.module';
 import { MediaModule } from './media/media.module';
+import { CourseModule } from './course/course.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MediaModule } from './media/media.module';
     GroupChatModule,
     BlockModule,
     MediaModule,
+    CourseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

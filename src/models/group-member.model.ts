@@ -21,7 +21,7 @@ export class GroupMember {
   })
   group: Group | string;
 
-  @Prop({ type: String, enum: Role })
+  @Prop({ type: String, enum: Role, required: true })
   role: Role;
 
   @Prop({
