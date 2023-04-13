@@ -13,34 +13,19 @@ import {
   IsString,
 } from 'class-validator';
 import { Group } from 'src/models/group.model';
+import { GroupInfoDto } from './group-info.dto';
 import { GroupMemberDto } from './group-member.dto';
 
 @Exclude()
-export class GroupDto {
-  @Expose()
-  @IsMongoId()
-  @Transform((value) => value.obj._id.toString())
-  _id: string;
-
-  @Expose()
-  @IsString()
-  name: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  description?: string;
-
+export class GroupDto extends GroupInfoDto {
   @Expose()
   @IsArray()
   @Type(() => GroupMemberDto)
   members: GroupMemberDto[];
 
-  @Expose()
-  @IsDateString()
-  createdAt: string;
-
-  static from(group: Group): GroupDto {
-    return plainToInstance(GroupDto, group);
+  static fromMembers(group: Group, members: GroupMemberDto[]): GroupDto {
+    const dto = plainToInstance(GroupDto, group);
+    dto.members = members;
+    return dto;
   }
 }

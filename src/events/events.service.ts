@@ -6,8 +6,8 @@ import admin from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
 import { SendMessageResponse } from './dto/send-message.response.dto';
 import { AccessControlDto } from '../group-chat/dto/access-control.dto';
-import { SendAccessControlDto } from 'src/group-chat/dto/send-access-control.dto';
 import { FCMEventType } from 'src/enums/fcm-event-type.enum';
+import { FCMEvent } from './dto/fcm-event';
 
 @Injectable()
 export class EventsService {
@@ -152,19 +152,7 @@ export class EventsService {
     return response;
   }
 
-  async sendAccessControlEvent(
-    senderUserId: string,
-    recipientUserId: string,
-    chatroomId: string,
-    event: SendAccessControlDto,
-  ): Promise<void> {
-    const dto = new AccessControlDto();
-    dto.type = event.type;
-    dto.senderUserId = senderUserId;
-    dto.targetUserId = event.targetUserId;
-    dto.chatroomId = chatroomId;
-    dto.sentAt = event.sentAt;
-
+  async sendEvent(recipientUserId: string, event: FCMEvent): Promise<void> {
     const recipientDevices = await this.devicesService.getAllDevices(
       recipientUserId,
     );
@@ -172,7 +160,7 @@ export class EventsService {
       recipientDevices.map(async (device) => {
         const fcmMessage: Message = this.createFcmMessage(
           device.firebaseMessagingToken,
-          { ...dto },
+          { ...event },
         );
         try {
           const messageId = await admin.messaging().send(fcmMessage);

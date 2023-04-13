@@ -21,6 +21,8 @@ import { RolesGuard } from '../guards/roles.guard';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { Group } from 'src/models/group.model';
+import { GroupInfoDto } from './dto/group-info.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -42,14 +44,25 @@ export class GroupChatController {
     return group;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get(':groupId/info')
+  async getGroupInfo(@Param('groupId') groupId: string): Promise<GroupInfoDto> {
+    const group = await this.service.getGroupInfo(groupId);
+    if (!group) {
+      throw new NotFoundException(`Group #${groupId} not found`);
+    }
+    return group;
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Patch(':groupId')
   async patchGroup(
+    @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
     @Body() dto: UpdateGroupDto,
   ): Promise<GroupDto> {
-    await this.service.patchGroup(groupId, dto);
+    await this.service.patchGroup(user.userId, groupId, dto);
     const groupDto = await this.service.getGroup(groupId);
     if (!groupDto) {
       // how??
@@ -120,7 +133,7 @@ export class GroupChatController {
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
   ): Promise<void> {
-    await this.service.removeMember(user.userId, groupId);
+    await this.service.memberLeave(user.userId, groupId);
   }
 
   @HttpCode(200)

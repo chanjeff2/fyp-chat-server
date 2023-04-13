@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FCMEventType } from 'src/enums/fcm-event-type.enum';
+import { FCMEvent } from 'src/events/dto/fcm-event';
 import { EventsService } from 'src/events/events.service';
 import {
   GroupMember,
@@ -15,10 +16,14 @@ import {
 import { Group, GroupDocument } from 'src/models/group.model';
 import { UserProfileDto } from 'src/users/dto/user-profile.dto';
 import { UsersService } from 'src/users/users.service';
+import { AccessControlDto } from './dto/access-control.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { GroupInfoDto } from './dto/group-info.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
+import { GroupPatchEventDto } from './dto/group-patch-event.dto';
 import { GroupDto } from './dto/group.dto';
 import { JoinGroupDto } from './dto/join-group.dto';
+import { MemberJoinLeaveEventDto } from './dto/member-join-leave-event.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 
@@ -69,24 +74,21 @@ export class GroupChatService {
         break;
     }
     // broadcast the event to every member in the group
-    await this.broadcastAccessControlEvent(senderUserId, chatroomId, dto);
+    const event = new AccessControlDto();
+    event.type = dto.type;
+    event.senderUserId = senderUserId;
+    event.targetUserId = dto.targetUserId;
+    event.chatroomId = chatroomId;
+    event.sentAt = dto.sentAt;
+    await this.broadcastEvent(senderUserId, event);
   }
 
-  private async broadcastAccessControlEvent(
-    senderUserId: string,
-    chatroomId: string,
-    event: SendAccessControlDto,
-  ) {
+  private async broadcastEvent(chatroomId: string, event: FCMEvent) {
     // broadcast the event to every member in the group
     const members = await this.getMembersOfGroup(chatroomId);
     await Promise.all(
       members.map(async (member) => {
-        await this.eventsService.sendAccessControlEvent(
-          senderUserId,
-          member._id,
-          chatroomId,
-          event,
-        );
+        await this.eventsService.sendEvent(member._id, event);
       }),
     );
   }
@@ -113,6 +115,34 @@ export class GroupChatService {
       group: dto.chatroomId,
       role: dto.role,
     });
+  }
+
+  // will send notificiation to device
+  async memberJoin(userId: string, chatroomId: string): Promise<void> {
+    await this.addMember({
+      userId: userId,
+      chatroomId: chatroomId,
+      role: Role.Member,
+    });
+    // broadcast the event to every member in the group
+    const event = new MemberJoinLeaveEventDto();
+    event.type = FCMEventType.MemberJoin;
+    event.senderUserId = userId;
+    event.chatroomId = chatroomId;
+    event.sentAt = new Date().toISOString();
+    await this.broadcastEvent(userId, event);
+  }
+
+  // will send notificiation to device
+  async memberLeave(userId: string, chatroomId: string): Promise<void> {
+    await this.removeMember(userId, chatroomId);
+    // broadcast the event to every member in the group
+    const event = new MemberJoinLeaveEventDto();
+    event.type = FCMEventType.MemberLeave;
+    event.senderUserId = userId;
+    event.chatroomId = chatroomId;
+    event.sentAt = new Date().toISOString();
+    await this.broadcastEvent(userId, event);
   }
 
   // will NOT send notification to device
@@ -147,6 +177,14 @@ export class GroupChatService {
     return member;
   }
 
+  async getGroupInfo(groupId: string): Promise<GroupInfoDto | null> {
+    const group = await this.groupModel.findById(groupId);
+    if (!group) {
+      return null;
+    }
+    return GroupInfoDto.from(group);
+  }
+
   async getGroup(groupId: string): Promise<GroupDto | null> {
     const group = await this.groupModel.findById(groupId);
     if (!group) {
@@ -166,21 +204,31 @@ export class GroupChatService {
         return groupMemberDto;
       }),
     );
-    const groupDto = GroupDto.from(group);
-    groupDto.members = memberDtos.filter(
-      (e): e is GroupMemberDto => e !== null,
+    const groupDto = GroupDto.fromMembers(
+      group,
+      memberDtos.filter((e): e is GroupMemberDto => e !== null),
     );
     groupDto.createdAt = group.createdAt.toISOString();
     return groupDto;
   }
 
-  async patchGroup(groupId: string, dto: UpdateGroupDto): Promise<Group> {
+  async patchGroup(
+    userId: string,
+    groupId: string,
+    dto: UpdateGroupDto,
+  ): Promise<Group> {
     const group = await this.groupModel.findByIdAndUpdate(groupId, dto, {
       new: true,
     });
     if (!group) {
       throw new NotFoundException(`group #${groupId} not found.`);
     }
+    const event = new GroupPatchEventDto();
+    event.type = FCMEventType.PatchGroup;
+    event.senderUserId = userId;
+    event.chatroomId = groupId;
+    event.sentAt = new Date().toISOString();
+    this.broadcastEvent(groupId, event);
     return group;
   }
 
