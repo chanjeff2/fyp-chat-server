@@ -23,7 +23,6 @@ export const IsCourseCode =
           const courseCode = value.toUpperCase();
           const courseCodeRegex = /^[A-Z]{4}\d{4}[A-Z]?$/;
           const valid = courseCodeRegex.test(courseCode);
-          console.log(valid);
           return valid;
         },
       },

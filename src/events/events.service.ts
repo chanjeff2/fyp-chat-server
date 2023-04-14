@@ -109,7 +109,7 @@ export class EventsService {
           return; // how?
         }
         const dto = new MessageDto();
-        dto.type = FCMEventType.TextMessage;
+        dto.type = sendMessageDto.messageType;
         dto.senderUserId = senderUserId;
         dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
         dto.chatroomId = sendMessageDto.chatroomId;
