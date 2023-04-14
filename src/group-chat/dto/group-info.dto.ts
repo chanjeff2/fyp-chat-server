@@ -1,5 +1,12 @@
 import { Exclude, Expose, plainToInstance, Transform } from 'class-transformer';
-import { IsDateString, IsMongoId, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { GroupType } from 'src/enums/group-type.enum';
 import { Group } from 'src/models/group.model';
 
 @Exclude()
@@ -8,6 +15,10 @@ export class GroupInfoDto {
   @IsMongoId()
   @Transform((value) => value.obj._id.toString())
   _id: string;
+
+  @Expose()
+  @IsEnum(GroupType)
+  groupType: GroupType;
 
   @Expose()
   @IsString()

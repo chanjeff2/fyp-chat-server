@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { GroupType } from 'src/enums/group-type.enum';
 import { GroupChatService } from 'src/group-chat/group-chat.service';
 import { Course, CourseDocument } from 'src/models/course.model';
 import { CourseDto } from './dto/course.dto';
@@ -41,6 +42,7 @@ export class CourseService {
   async createCourse(getCourseDto: GetCourseDto): Promise<Course> {
     const group = await this.groupChatService.createGroup({
       name: `${getCourseDto.courseCode} ${getCourseDto.year} ${getCourseDto.semester}`,
+      groupType: GroupType.Course,
     });
     const course = await this.courseModel.create({
       ...getCourseDto,

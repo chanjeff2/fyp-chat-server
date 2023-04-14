@@ -22,6 +22,7 @@ export class CourseDto extends GroupDto {
     dto.courseCode = course.courseCode;
     dto.year = course.year;
     dto.semester = course.semester;
+    dto.groupType = groupDto.groupType;
     dto.name = groupDto.name;
     dto.description = groupDto.description;
     dto.members = groupDto.members;
