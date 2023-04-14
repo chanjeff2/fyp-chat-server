@@ -24,7 +24,7 @@ export class RolesGuard implements CanActivate {
     }
     const request = context.switchToHttp().getRequest();
     const user: JwtPayload = request.user;
-    const groupId: string = request.params.groupId;
+    const groupId: string = request.params.groupId ?? request.params.chatroomId;
     const role = await this.groupChatService.getRoleOfMember(
       groupId,
       user.userId,
