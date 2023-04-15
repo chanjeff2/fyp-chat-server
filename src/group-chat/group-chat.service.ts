@@ -22,7 +22,7 @@ import { GroupInfoDto } from './dto/group-info.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { GroupPatchEventDto } from './dto/group-patch-event.dto';
 import { GroupDto } from './dto/group.dto';
-import { JoinGroupDto } from './dto/join-group.dto';
+import { AddMemberDto } from './dto/add-member.dto';
 import { MemberJoinLeaveEventDto } from './dto/member-join-leave-event.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -46,7 +46,7 @@ export class GroupChatService {
     return await this.groupModel.create(createGroupDto);
   }
 
-  // will send invitation to device
+  /// will send invitation to device
   async accessControl(
     senderUserId: string,
     chatroomId: string,
@@ -93,8 +93,8 @@ export class GroupChatService {
     );
   }
 
-  // will NOT send invitation to device
-  async addMember(dto: JoinGroupDto): Promise<GroupMember> {
+  /// will NOT send invitation to device
+  async addMember(dto: AddMemberDto): Promise<GroupMember> {
     const exists = await this.groupMemberModel.exists({
       user: dto.userId,
       group: dto.chatroomId,
@@ -117,7 +117,7 @@ export class GroupChatService {
     });
   }
 
-  // will send notificiation to device
+  /// will send notificiation to device
   async memberJoin(userId: string, chatroomId: string): Promise<void> {
     await this.addMember({
       userId: userId,
@@ -275,6 +275,11 @@ export class GroupChatService {
     dto.user = UserProfileDto.from(user);
     dto.role = member.role;
     return dto;
+  }
+
+  async isPublic(groupId: string): Promise<boolean> {
+    const group = await this.groupModel.findById(groupId);
+    return group?.isPublic ?? false;
   }
 
   async getRoleOfMember(groupId: string, userId: string): Promise<Role | null> {

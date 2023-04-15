@@ -1,7 +1,7 @@
 import { IsEnum, IsMongoId } from 'class-validator';
 import { Role } from 'src/models/group-member.model';
 
-export class JoinGroupDto {
+export class AddMemberDto {
   @IsMongoId()
   chatroomId: string;
 

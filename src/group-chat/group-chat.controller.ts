@@ -22,6 +22,7 @@ import { GroupMemberDto } from './dto/group-member.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupInfoDto } from './dto/group-info.dto';
+import { IsPublicChatroomGuard } from 'src/guards/is-public-chatroom.guard';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -60,14 +61,14 @@ export class GroupChatController {
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
     @Body() dto: UpdateGroupDto,
-  ): Promise<GroupDto> {
+  ): Promise<GroupInfoDto> {
     await this.service.patchGroup(user.userId, groupId, dto);
-    const groupDto = await this.service.getGroup(groupId);
-    if (!groupDto) {
+    const groupInfoDto = await this.service.getGroupInfo(groupId);
+    if (!groupInfoDto) {
       // how??
       throw new NotFoundException(`group #${groupId} not found.`);
     }
-    return groupDto;
+    return groupInfoDto;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -101,29 +102,18 @@ export class GroupChatController {
     return groupDto!!;
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Post(':groupId/join')
-  // async joinGroup(
-  //   @AuthUser() user: JwtPayload,
-  //   @Param('groupId') groupId: string,
-  // ): Promise<GroupDto> {
-  //   try {
-  //     await this.service.addMember({
-  //       group: groupId,
-  //       user: user.userId,
-  //       role: Role.Member,
-  //     });
-  //   } catch (e: unknown) {
-  //     if (e instanceof Error) {
-  //       throw new BadRequestException(e.message);
-  //     }
-  //   }
-  //   const groupDto = await this.service.getGroup(groupId);
-  //   if (!groupDto) {
-  //     throw new NotFoundException(`Group #${groupId} not found`);
-  //   }
-  //   return groupDto;
-  // }
+  @UseGuards(JwtAuthGuard, IsPublicChatroomGuard)
+  @Post(':groupId/join')
+  async joinGroup(
+    @AuthUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+  ): Promise<void> {
+    await this.service.addMember({
+      chatroomId: groupId,
+      userId: user.userId,
+      role: Role.Member,
+    });
+  }
 
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
