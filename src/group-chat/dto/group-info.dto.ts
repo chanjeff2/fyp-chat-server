@@ -6,6 +6,7 @@ import {
   IsMongoId,
   IsOptional,
   IsString,
+  IsUrl,
 } from 'class-validator';
 import { GroupType } from 'src/enums/group-type.enum';
 import { Group } from 'src/models/group.model';
@@ -33,6 +34,11 @@ export class GroupInfoDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @Expose()
+  @IsUrl()
+  @IsOptional()
+  profilePicUrl?: string;
 
   @Expose()
   @IsDateString()

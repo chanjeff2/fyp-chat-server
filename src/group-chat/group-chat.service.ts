@@ -26,6 +26,7 @@ import { AddMemberDto } from './dto/add-member.dto';
 import { MemberJoinLeaveEventDto } from './dto/member-join-leave-event.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { MediaService } from 'src/media/media.service';
 
 @Injectable()
 export class GroupChatService {
@@ -35,6 +36,7 @@ export class GroupChatService {
     private groupMemberModel: Model<GroupMemberDocument>,
     private usersService: UsersService,
     private eventsService: EventsService,
+    private mediaService: MediaService,
   ) {}
 
   async isGroupExists(id: string): Promise<boolean> {
@@ -230,6 +232,30 @@ export class GroupChatService {
     event.sentAt = new Date().toISOString();
     this.broadcastEvent(groupId, event);
     return group;
+  }
+
+  async uploadProfilePic(
+    userId: string,
+    groupId: string,
+    file: Express.Multer.File,
+  ): Promise<Group> {
+    if (!(await this.isGroupExists(groupId))) {
+      throw new NotFoundException(`Group #${groupId} not found`);
+    }
+    const profilePicUrl = await this.mediaService.uploadProfilePic(
+      groupId,
+      file,
+    );
+    const group = await this.groupModel.findByIdAndUpdate(groupId, {
+      profilePicUrl: profilePicUrl,
+    });
+    const event = new GroupPatchEventDto();
+    event.type = FCMEventType.PatchGroup;
+    event.senderUserId = userId;
+    event.chatroomId = groupId;
+    event.sentAt = new Date().toISOString();
+    this.broadcastEvent(groupId, event);
+    return group!;
   }
 
   /// return members of a group given group Id

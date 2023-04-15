@@ -21,6 +21,9 @@ export class Group {
   @Prop()
   description?: string;
 
+  @Prop()
+  profilePicUrl?: string;
+
   @Prop({ required: true, default: false })
   isPublic: boolean;
 

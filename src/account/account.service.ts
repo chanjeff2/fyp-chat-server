@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MediaService } from 'src/media/media.service';
 import { User } from 'src/models/user.model';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
@@ -25,13 +25,17 @@ export class AccountService {
   async uploadProfilePic(
     userId: string,
     file: Express.Multer.File,
-  ): Promise<User | null> {
+  ): Promise<User> {
+    if (!(await this.usersService.isUserExist(userId))) {
+      throw new NotFoundException(`User #${userId} not found`);
+    }
     const profilePicUrl = await this.mediaService.uploadProfilePic(
       userId,
       file,
     );
-    return await this.usersService.updateUser(userId, {
+    const user = await this.usersService.updateUser(userId, {
       profilePicUrl: profilePicUrl,
     });
+    return user!;
   }
 }

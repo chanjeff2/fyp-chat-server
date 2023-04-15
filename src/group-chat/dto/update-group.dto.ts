@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateGroupDto {
   @IsString()
@@ -12,4 +12,8 @@ export class UpdateGroupDto {
   @IsBoolean()
   @IsOptional()
   isPublic?: boolean;
+
+  @IsUrl()
+  @IsOptional()
+  profilePicUrl?: string;
 }

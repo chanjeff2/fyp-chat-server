@@ -3,11 +3,16 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
+  Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -23,6 +28,7 @@ import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupInfoDto } from './dto/group-info.dto';
 import { IsPublicChatroomGuard } from 'src/guards/is-public-chatroom.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -63,6 +69,33 @@ export class GroupChatController {
     @Body() dto: UpdateGroupDto,
   ): Promise<GroupInfoDto> {
     await this.service.patchGroup(user.userId, groupId, dto);
+    const groupInfoDto = await this.service.getGroupInfo(groupId);
+    if (!groupInfoDto) {
+      // how??
+      throw new NotFoundException(`group #${groupId} not found.`);
+    }
+    return groupInfoDto;
+  }
+
+  @Put(':groupId/update-profile-pic')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfilePic(
+    @AuthUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jpg|jpeg|png)$/,
+        })
+        .addMaxSizeValidator({ maxSize: 10485760 })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+  ): Promise<GroupInfoDto> {
+    await this.service.uploadProfilePic(user.userId, groupId, file);
     const groupInfoDto = await this.service.getGroupInfo(groupId);
     if (!groupInfoDto) {
       // how??
