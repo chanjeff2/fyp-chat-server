@@ -1,5 +1,11 @@
 import { Expose, Exclude, Transform, plainToClass } from 'class-transformer';
-import { IsMongoId, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsDateString,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { User } from 'src/models/user.model';
 
 @Exclude()
@@ -27,6 +33,14 @@ export class UserProfileDto {
   @IsOptional()
   @Expose()
   status?: string;
+
+  @Expose()
+  @IsDateString()
+  createdAt: string;
+
+  @Expose()
+  @IsDateString()
+  updatedAt: string;
 
   static from(user: User): UserProfileDto {
     return plainToClass(UserProfileDto, user);

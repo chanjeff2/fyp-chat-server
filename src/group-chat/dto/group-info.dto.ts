@@ -44,6 +44,10 @@ export class GroupInfoDto {
   @IsDateString()
   createdAt: string;
 
+  @Expose()
+  @IsDateString()
+  updatedAt: string;
+
   static from(group: Group): GroupInfoDto {
     return plainToInstance(GroupInfoDto, group);
   }
