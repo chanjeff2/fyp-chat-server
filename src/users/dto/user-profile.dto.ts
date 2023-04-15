@@ -1,5 +1,5 @@
 import { Expose, Exclude, Transform, plainToClass } from 'class-transformer';
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsMongoId, IsOptional, IsString, IsUrl } from 'class-validator';
 import { User } from 'src/models/user.model';
 
 @Exclude()
@@ -16,7 +16,12 @@ export class UserProfileDto {
   @IsString()
   @IsOptional()
   @Expose()
-  displayName: string;
+  displayName?: string;
+
+  @IsUrl()
+  @IsOptional()
+  @Expose()
+  profilePicUrl?: string;
 
   @IsString()
   @IsOptional()

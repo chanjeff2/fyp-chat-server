@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { FileDocument, FileModel } from 'src/models/file.model';
 import admin from 'firebase-admin';
 import * as crypto from 'crypto';
+import { read } from 'fs';
 
 @Injectable()
 export class MediaService {
@@ -11,16 +12,35 @@ export class MediaService {
     @InjectModel(FileModel.name) private fileModel: Model<FileDocument>,
   ) {}
 
+  /// return public url of the file
+  private async saveFile(
+    path: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const ref = admin.storage().bucket().file(path);
+    await ref.save(file.buffer);
+    await ref.makePublic();
+    return ref.metadata.mediaLink;
+  }
+
   async uploadFile(file: Express.Multer.File): Promise<FileModel> {
     const uuid = crypto.randomUUID();
     const docPath = `file/${uuid}`;
-    const ref = admin.storage().bucket().file(docPath);
-    await ref.save(file.buffer);
+    await this.saveFile(docPath, file);
     const fileRecord = await this.fileModel.create({
       name: file.originalname,
       path: docPath,
     });
     return fileRecord;
+  }
+
+  async uploadProfilePic(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    // upload file
+    const path = `profile-pic/${id}`;
+    return await this.saveFile(path, file);
   }
 
   async getFile(fileId: string): Promise<Buffer> {

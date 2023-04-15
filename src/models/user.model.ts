@@ -17,6 +17,9 @@ export class User {
   @Prop()
   status?: string;
 
+  @Prop()
+  profilePicUrl?: string;
+
   @Prop({ required: true })
   passwordHash: string;
 

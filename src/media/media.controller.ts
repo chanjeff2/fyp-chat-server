@@ -1,7 +1,9 @@
 import {
   Controller,
   Get,
+  HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Post,
   StreamableFile,
   UploadedFile,
@@ -21,7 +23,14 @@ export class MediaController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updateFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({ maxSize: 10485760 })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
   ): Promise<FileDto> {
     const uploadedFile = await this.service.uploadFile(file);
     return FileDto.from(uploadedFile);
@@ -29,7 +38,6 @@ export class MediaController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors()
   async getFile(@Param('id') id: string): Promise<StreamableFile> {
     const file = await this.service.getFile(id);
     return new StreamableFile(file);
