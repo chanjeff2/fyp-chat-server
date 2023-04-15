@@ -27,6 +27,7 @@ import { MemberJoinLeaveEventDto } from './dto/member-join-leave-event.dto';
 import { SendAccessControlDto } from './dto/send-access-control.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { MediaService } from 'src/media/media.service';
+import { SyncGroupDto } from './dto/sync-group.dto';
 
 @Injectable()
 export class GroupChatService {
@@ -311,5 +312,20 @@ export class GroupChatService {
   async getRoleOfMember(groupId: string, userId: string): Promise<Role | null> {
     const member = await this.getGroupMember(groupId, userId);
     return member?.role ?? null;
+  }
+
+  async synchronize(data: SyncGroupDto[]): Promise<Group[]> {
+    const groups = await Promise.all(
+      data.map(async (dto) => {
+        const group = await this.groupModel.findOne({
+          _id: dto._id,
+          updatedAt: {
+            $gt: dto.updatedAt, // db is newer
+          },
+        });
+        return group as Group;
+      }),
+    );
+    return groups.filter((e): e is Group => e !== null);
   }
 }

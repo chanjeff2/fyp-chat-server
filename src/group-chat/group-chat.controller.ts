@@ -29,6 +29,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupInfoDto } from './dto/group-info.dto';
 import { IsPublicChatroomGuard } from 'src/guards/is-public-chatroom.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SyncGroupDto } from './dto/sync-group.dto';
 
 @Controller('group-chat')
 export class GroupChatController {
@@ -173,5 +174,13 @@ export class GroupChatController {
       throw new NotFoundException(`Group #${groupId} not found`);
     }
     return groupDto;
+  }
+
+  @Post('sync')
+  async synchronize(
+    @Body('data') data: SyncGroupDto[],
+  ): Promise<GroupInfoDto[]> {
+    const groups = await this.service.synchronize(data);
+    return groups.map((group) => GroupInfoDto.from(group));
   }
 }
