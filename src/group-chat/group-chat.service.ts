@@ -83,7 +83,7 @@ export class GroupChatService {
     event.targetUserId = dto.targetUserId;
     event.chatroomId = chatroomId;
     event.sentAt = new Date().toISOString();
-    await this.broadcastEvent(senderUserId, event);
+    await this.broadcastEvent(chatroomId, event);
   }
 
   private async broadcastEvent(chatroomId: string, event: FCMEvent) {
@@ -91,7 +91,8 @@ export class GroupChatService {
     const members = await this.getMembersOfGroup(chatroomId);
     await Promise.all(
       members.map(async (member) => {
-        await this.eventsService.sendEvent(member._id, event);
+        const user = member.user as string;
+        await this.eventsService.sendEvent(user, event);
       }),
     );
   }
