@@ -81,7 +81,7 @@ export class GroupChatService {
     event.senderUserId = senderUserId;
     event.targetUserId = dto.targetUserId;
     event.chatroomId = chatroomId;
-    event.sentAt = dto.sentAt;
+    event.sentAt = new Date().toISOString();
     await this.broadcastEvent(senderUserId, event);
   }
 

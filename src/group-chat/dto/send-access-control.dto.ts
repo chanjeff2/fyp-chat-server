@@ -7,7 +7,4 @@ export class SendAccessControlDto {
 
   @IsEnum(FCMEventType)
   type: FCMEventType;
-
-  @IsDateString()
-  sentAt: string;
 }

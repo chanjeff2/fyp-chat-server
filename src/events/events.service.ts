@@ -115,7 +115,7 @@ export class EventsService {
         dto.chatroomId = sendMessageDto.chatroomId;
         dto.cipherTextType = message.cipherTextType.toString();
         dto.content = message.content;
-        dto.sentAt = sendMessageDto.sentAt;
+        dto.sentAt = new Date().toISOString();
 
         // get recipient fcm token
         const device = recipientDeviceMap.get(id);
@@ -161,46 +161,6 @@ export class EventsService {
         const fcmMessage: Message = this.createFcmMessage(
           device.firebaseMessagingToken,
           { ...event },
-        );
-        try {
-          const messageId = await admin.messaging().send(fcmMessage);
-          return messageId;
-        } catch (e) {
-          console.error(e);
-          if (
-            e.code === 'messaging/registration-token-not-registered' ||
-            e.code === 'messaging/invalid-argument'
-          ) {
-            // remove stale device
-            this.devicesService.deleteDevice(recipientUserId, device.deviceId);
-          }
-        }
-      }),
-    );
-  }
-
-  /// broardcast the invitation, assuming the new member is already added to group
-  async sendInvitation(
-    senderUserId: string,
-    recipientUserId: string,
-    chatroomId: string,
-    sentAt: string,
-  ): Promise<void> {
-    const dto = new AccessControlDto();
-    dto.type = FCMEventType.AddMember;
-    dto.senderUserId = senderUserId;
-    dto.targetUserId = recipientUserId;
-    dto.chatroomId = chatroomId;
-    dto.sentAt = sentAt;
-
-    const recipientDevices = await this.devicesService.getAllDevices(
-      recipientUserId,
-    );
-    await Promise.all(
-      recipientDevices.map(async (device) => {
-        const fcmMessage: Message = this.createFcmMessage(
-          device.firebaseMessagingToken,
-          { ...dto },
         );
         try {
           const messageId = await admin.messaging().send(fcmMessage);

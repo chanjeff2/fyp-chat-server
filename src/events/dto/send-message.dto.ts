@@ -26,7 +26,4 @@ export class SendMessageDto {
   @IsArray()
   @Type(() => IncomingMessageDto)
   messages: IncomingMessageDto[];
-
-  @IsDateString()
-  sentAt: string; // iso string
 }
