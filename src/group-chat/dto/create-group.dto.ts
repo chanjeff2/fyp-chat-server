@@ -1,4 +1,4 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { GroupType } from 'src/enums/group-type.enum';
 
 export class CreateGroupDto {
@@ -6,5 +6,10 @@ export class CreateGroupDto {
   name: string;
 
   @IsEnum(GroupType)
+  @IsOptional()
   groupType?: GroupType;
+
+  @IsBoolean()
+  @IsOptional()
+  isPublic?: boolean;
 }

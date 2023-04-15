@@ -1,5 +1,6 @@
 import { Exclude, Expose, plainToInstance, Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsMongoId,
@@ -19,6 +20,10 @@ export class GroupInfoDto {
   @Expose()
   @IsEnum(GroupType)
   groupType: GroupType;
+
+  @Expose()
+  @IsBoolean()
+  isPublic: boolean;
 
   @Expose()
   @IsString()

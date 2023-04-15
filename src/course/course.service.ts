@@ -43,6 +43,7 @@ export class CourseService {
     const group = await this.groupChatService.createGroup({
       name: `${getCourseDto.courseCode} ${getCourseDto.year} ${getCourseDto.semester}`,
       groupType: GroupType.Course,
+      isPublic: true,
     });
     const course = await this.courseModel.create({
       ...getCourseDto,
