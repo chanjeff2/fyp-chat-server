@@ -1,4 +1,12 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
+import { SyncUserDto } from './dto/sync-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { UsersService } from './users.service';
 
@@ -24,5 +32,13 @@ export class UsersController {
       throw new NotFoundException(`User ${username} not found`);
     }
     return UserProfileDto.from(user);
+  }
+
+  @Post('sync')
+  async synchronize(
+    @Body('data') data: SyncUserDto[],
+  ): Promise<UserProfileDto[]> {
+    const users = await this.usersService.synchronize(data);
+    return users.map((user) => UserProfileDto.from(user));
   }
 }

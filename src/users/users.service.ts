@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/models/user.model';
 import { CreateUserDto } from './dto/create-user.dto';
+import { SyncUserDto } from './dto/sync-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -52,5 +53,20 @@ export class UsersService {
       },
     );
     return user;
+  }
+
+  async synchronize(data: SyncUserDto[]): Promise<User[]> {
+    const users = await Promise.all(
+      data.map(async (dto) => {
+        const user = await this.userModel.findOne({
+          _id: dto._id,
+          updatedAt: {
+            $gt: dto.updatedAt, // db is newer
+          },
+        });
+        return user as User;
+      }),
+    );
+    return users.filter((e): e is User => e !== null);
   }
 }
