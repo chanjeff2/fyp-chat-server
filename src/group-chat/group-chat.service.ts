@@ -55,6 +55,12 @@ export class GroupChatService {
     chatroomId: string,
     dto: SendAccessControlDto,
   ) {
+    const event = new AccessControlDto();
+    event.type = dto.type;
+    event.senderUserId = senderUserId;
+    event.targetUserId = dto.targetUserId;
+    event.chatroomId = chatroomId;
+    event.sentAt = new Date().toISOString();
     // perform access control event
     switch (dto.type) {
       case FCMEventType.AddMember:
@@ -63,27 +69,27 @@ export class GroupChatService {
           chatroomId: chatroomId,
           role: Role.Member,
         });
+        // broadcast the event to every member in the group
+        await this.broadcastEvent(chatroomId, event);
         break;
       case FCMEventType.KickMember:
+        // broadcast the event before remove
+        await this.broadcastEvent(chatroomId, event);
         await this.removeMember(dto.targetUserId, chatroomId);
         break;
       case FCMEventType.PromoteAdmin:
         await this.updateRole(dto.targetUserId, chatroomId, Role.Admin);
+        // broadcast the event to every member in the group
+        await this.broadcastEvent(chatroomId, event);
         break;
       case FCMEventType.DemoteAdmin:
         await this.updateRole(dto.targetUserId, chatroomId, Role.Member);
+        // broadcast the event to every member in the group
+        await this.broadcastEvent(chatroomId, event);
         break;
       default:
         break;
     }
-    // broadcast the event to every member in the group
-    const event = new AccessControlDto();
-    event.type = dto.type;
-    event.senderUserId = senderUserId;
-    event.targetUserId = dto.targetUserId;
-    event.chatroomId = chatroomId;
-    event.sentAt = new Date().toISOString();
-    await this.broadcastEvent(chatroomId, event);
   }
 
   private async broadcastEvent(chatroomId: string, event: FCMEvent) {
