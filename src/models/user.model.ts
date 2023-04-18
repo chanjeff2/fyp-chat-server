@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
-import { Device } from './device.model';
+import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -25,9 +24,6 @@ export class User {
 
   @Prop()
   identityKey?: string;
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }] })
-  devices: (Device | string)[];
 
   @Prop()
   refreshToken?: string;
