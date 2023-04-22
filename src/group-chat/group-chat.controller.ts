@@ -142,11 +142,7 @@ export class GroupChatController {
     @AuthUser() user: JwtPayload,
     @Param('groupId') groupId: string,
   ): Promise<void> {
-    await this.service.addMember({
-      chatroomId: groupId,
-      userId: user.userId,
-      role: Role.Member,
-    });
+    await this.service.memberJoin(user.userId, groupId);
   }
 
   @HttpCode(200)
