@@ -5,16 +5,19 @@ import {
   NotFoundException,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { SyncUserDto } from './dto/sync-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('id/:id')
+  @UseGuards(JwtAuthGuard)
   async getUserById(@Param('id') id: string): Promise<UserProfileDto> {
     const user = await this.usersService.getUserById(id);
     if (!user) {
@@ -24,6 +27,7 @@ export class UsersController {
   }
 
   @Get('username/:username')
+  @UseGuards(JwtAuthGuard)
   async getUserByUsername(
     @Param('username') username: string,
   ): Promise<UserProfileDto> {
@@ -35,6 +39,7 @@ export class UsersController {
   }
 
   @Post('sync')
+  @UseGuards(JwtAuthGuard)
   async synchronize(
     @Body('data') data: SyncUserDto[],
   ): Promise<UserProfileDto[]> {
