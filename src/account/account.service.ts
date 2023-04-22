@@ -38,4 +38,14 @@ export class AccountService {
     });
     return user!;
   }
+
+  async removeProfilePic(userId: string): Promise<User> {
+    if (!(await this.usersService.isUserExist(userId))) {
+      throw new NotFoundException(`User #${userId} not found`);
+    }
+    const user = await this.usersService.updateUser(userId, {
+      profilePicUrl: null,
+    });
+    return user!;
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -78,7 +79,7 @@ export class GroupChatController {
     return groupInfoDto;
   }
 
-  @Put(':groupId/update-profile-pic')
+  @Put(':groupId/profile-pic')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updateProfilePic(
@@ -97,6 +98,21 @@ export class GroupChatController {
     file: Express.Multer.File,
   ): Promise<GroupInfoDto> {
     await this.service.uploadProfilePic(user.userId, groupId, file);
+    const groupInfoDto = await this.service.getGroupInfo(groupId);
+    if (!groupInfoDto) {
+      // how??
+      throw new NotFoundException(`group #${groupId} not found.`);
+    }
+    return groupInfoDto;
+  }
+
+  @Delete(':groupId/profile-pic')
+  @UseGuards(JwtAuthGuard)
+  async removeProfilePic(
+    @AuthUser() user: JwtPayload,
+    @Param('groupId') groupId: string,
+  ): Promise<GroupInfoDto> {
+    await this.service.removeProfilePic(user.userId, groupId);
     const groupInfoDto = await this.service.getGroupInfo(groupId);
     if (!groupInfoDto) {
       // how??

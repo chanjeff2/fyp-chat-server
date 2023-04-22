@@ -266,6 +266,22 @@ export class GroupChatService {
     return group!;
   }
 
+  async removeProfilePic(userId: string, groupId: string): Promise<Group> {
+    if (!(await this.isGroupExists(groupId))) {
+      throw new NotFoundException(`Group #${groupId} not found`);
+    }
+    const group = await this.groupModel.findByIdAndUpdate(groupId, {
+      profilePicUrl: null,
+    });
+    const event = new GroupPatchEventDto();
+    event.type = FCMEventType.PatchGroup;
+    event.senderUserId = userId;
+    event.chatroomId = groupId;
+    event.sentAt = new Date().toISOString();
+    this.broadcastEvent(groupId, event);
+    return group!;
+  }
+
   /// return members of a group given group Id
   async getMembersOfGroup(groupId: string): Promise<GroupMember[]> {
     return await this.groupMemberModel.find({ group: groupId });

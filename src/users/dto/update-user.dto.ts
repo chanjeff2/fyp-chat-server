@@ -15,5 +15,5 @@ export class UpdateUserDto {
 
   @IsUrl()
   @IsOptional()
-  profilePicUrl?: string;
+  profilePicUrl?: string | null;
 }

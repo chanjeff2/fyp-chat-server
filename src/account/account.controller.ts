@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   NotFoundException,
@@ -45,7 +46,7 @@ export class AccountController {
     return AccountDto.from(userObj);
   }
 
-  @Put('update-profile-pic')
+  @Put('profile-pic')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updateProfilePic(
@@ -66,6 +67,14 @@ export class AccountController {
       user.userId,
       file,
     );
+    if (!userObj) throw new NotFoundException('user profile not found');
+    return AccountDto.from(userObj);
+  }
+
+  @Delete('profile-pic')
+  @UseGuards(JwtAuthGuard)
+  async removeProfilePic(@AuthUser() user: JwtPayload): Promise<AccountDto> {
+    const userObj = await this.accountService.removeProfilePic(user.userId);
     if (!userObj) throw new NotFoundException('user profile not found');
     return AccountDto.from(userObj);
   }
