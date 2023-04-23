@@ -140,7 +140,7 @@ export class GroupChatService {
     event.senderUserId = userId;
     event.chatroomId = chatroomId;
     event.sentAt = new Date().toISOString();
-    await this.broadcastEvent(userId, event);
+    await this.broadcastEvent(chatroomId, event);
   }
 
   // will send notificiation to device
@@ -152,7 +152,7 @@ export class GroupChatService {
     event.senderUserId = userId;
     event.chatroomId = chatroomId;
     event.sentAt = new Date().toISOString();
-    await this.broadcastEvent(userId, event);
+    await this.broadcastEvent(chatroomId, event);
   }
 
   // will NOT send notification to device
