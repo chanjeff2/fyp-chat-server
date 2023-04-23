@@ -29,7 +29,7 @@ export class CourseService {
     } else {
       course = await this.createCourse(getCourseDto);
     }
-    await this.groupChatService.memberJoin(userId, course!.groupId);
+    await this.groupChatService.memberJoin(userId, course!.groupId.toString());
 
     const dto = await this.getCourseDto(getCourseDto);
     if (!dto) {
