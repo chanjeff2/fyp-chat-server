@@ -1,12 +1,12 @@
 import { IsEnum, IsMongoId } from 'class-validator';
 import { Role } from 'src/models/group-member.model';
 
-export class JoinGroupDto {
+export class AddMemberDto {
   @IsMongoId()
-  group: string;
+  chatroomId: string;
 
   @IsMongoId()
-  user: string;
+  userId: string;
 
   @IsEnum(Role)
   role: Role;

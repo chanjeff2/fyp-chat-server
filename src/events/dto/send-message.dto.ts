@@ -2,10 +2,12 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
+  IsEnum,
   IsInt,
   IsMongoId,
   IsString,
 } from 'class-validator';
+import { FCMEventType } from 'src/enums/fcm-event-type.enum';
 import { IncomingMessageDto } from './incoming-message.dto';
 
 export class SendMessageDto {
@@ -18,10 +20,10 @@ export class SendMessageDto {
   @IsString()
   chatroomId: string;
 
+  @IsEnum(FCMEventType)
+  messageType: FCMEventType;
+
   @IsArray()
   @Type(() => IncomingMessageDto)
   messages: IncomingMessageDto[];
-
-  @IsDateString()
-  sentAt: string; // iso string
 }

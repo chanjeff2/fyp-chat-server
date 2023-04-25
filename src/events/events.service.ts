@@ -5,10 +5,42 @@ import { SendMessageDto } from './dto/send-message.dto';
 import admin from 'firebase-admin';
 import { Message } from 'firebase-admin/lib/messaging/messaging-api';
 import { SendMessageResponse } from './dto/send-message.response.dto';
+import { AccessControlDto } from '../group-chat/dto/access-control.dto';
+import { FCMEventType } from 'src/enums/fcm-event-type.enum';
+import { FCMEvent } from './dto/fcm-event';
 
 @Injectable()
 export class EventsService {
   constructor(private devicesService: DevicesService) {}
+
+  private createFcmMessage(
+    token: string,
+    data: { [key: string]: string },
+  ): Message {
+    return {
+      token: token,
+      data: {
+        ...data,
+      },
+      // Set Android priority to "high"
+      android: {
+        priority: 'high',
+      },
+      // Add APNS (Apple) config
+      apns: {
+        payload: {
+          aps: {
+            contentAvailable: true,
+          },
+        },
+        headers: {
+          'apns-push-type': 'background',
+          'apns-priority': '5', // Must be `5` when `contentAvailable` is set to true.
+          'apns-topic': 'io.flutter.plugins.firebase.messaging', // bundle identifier
+        },
+      },
+    };
+  }
 
   async sendMessage(
     senderUserId: string,
@@ -77,12 +109,13 @@ export class EventsService {
           return; // how?
         }
         const dto = new MessageDto();
+        dto.type = sendMessageDto.messageType;
         dto.senderUserId = senderUserId;
         dto.senderDeviceId = sendMessageDto.senderDeviceId.toString();
         dto.chatroomId = sendMessageDto.chatroomId;
         dto.cipherTextType = message.cipherTextType.toString();
         dto.content = message.content;
-        dto.sentAt = sendMessageDto.sentAt;
+        dto.sentAt = new Date().toISOString();
 
         // get recipient fcm token
         const device = recipientDeviceMap.get(id);
@@ -90,29 +123,10 @@ export class EventsService {
           return; // again how?
         }
 
-        const fcmMessage: Message = {
-          token: device.firebaseMessagingToken,
-          data: {
-            ...dto,
-          },
-          // Set Android priority to "high"
-          android: {
-            priority: 'high',
-          },
-          // Add APNS (Apple) config
-          apns: {
-            payload: {
-              aps: {
-                contentAvailable: true,
-              },
-            },
-            headers: {
-              'apns-push-type': 'background',
-              'apns-priority': '5', // Must be `5` when `contentAvailable` is set to true.
-              'apns-topic': 'io.flutter.plugins.firebase.messaging', // bundle identifier
-            },
-          },
-        };
+        const fcmMessage: Message = this.createFcmMessage(
+          device.firebaseMessagingToken,
+          { ...dto },
+        );
 
         try {
           const messageId = await admin.messaging().send(fcmMessage);
@@ -136,5 +150,32 @@ export class EventsService {
     );
 
     return response;
+  }
+
+  async sendEvent(recipientUserId: string, event: FCMEvent): Promise<void> {
+    const recipientDevices = await this.devicesService.getAllDevices(
+      recipientUserId,
+    );
+    await Promise.all(
+      recipientDevices.map(async (device) => {
+        const fcmMessage: Message = this.createFcmMessage(
+          device.firebaseMessagingToken,
+          { ...event },
+        );
+        try {
+          const messageId = await admin.messaging().send(fcmMessage);
+          return messageId;
+        } catch (e) {
+          console.error(e);
+          if (
+            e.code === 'messaging/registration-token-not-registered' ||
+            e.code === 'messaging/invalid-argument'
+          ) {
+            // remove stale device
+            this.devicesService.deleteDevice(recipientUserId, device.deviceId);
+          }
+        }
+      }),
+    );
   }
 }

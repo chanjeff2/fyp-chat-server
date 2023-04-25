@@ -30,6 +30,7 @@ async function bootstrap() {
     // init firebase
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+      storageBucket: 'ustalk-7fd5b.appspot.com',
     });
   } catch (e) {
     // We skip the "already exists" message which is not an actual error when we're hot-reloading.

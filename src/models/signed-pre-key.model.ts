@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { IsString } from 'class-validator';
 import { PreKey } from './pre-key.model';
 
-@Schema()
+@Schema({ timestamps: true })
 @Exclude()
 export class SignedPreKey extends PreKey {
   @Prop({ reqired: true })

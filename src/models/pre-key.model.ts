@@ -2,7 +2,7 @@ import { Prop, Schema } from '@nestjs/mongoose';
 import { Exclude, Expose } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
 
-@Schema()
+@Schema({ timestamps: true })
 @Exclude()
 export class PreKey {
   @Expose()
@@ -14,4 +14,10 @@ export class PreKey {
   @Prop({ reqired: true })
   @IsString()
   key: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }

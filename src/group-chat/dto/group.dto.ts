@@ -1,19 +1,19 @@
-import { Transform, Type } from 'class-transformer';
-import { IsArray, IsDateString, IsMongoId, IsString } from 'class-validator';
+import { Exclude, Expose, plainToInstance, Type } from 'class-transformer';
+import { IsArray } from 'class-validator';
+import { Group } from 'src/models/group.model';
+import { GroupInfoDto } from './group-info.dto';
 import { GroupMemberDto } from './group-member.dto';
 
-export class GroupDto {
-  @IsMongoId()
-  @Transform((value) => value.obj._id.toString())
-  _id: string;
-
-  @IsString()
-  name: string;
-
+@Exclude()
+export class GroupDto extends GroupInfoDto {
+  @Expose()
   @IsArray()
   @Type(() => GroupMemberDto)
   members: GroupMemberDto[];
 
-  @IsDateString()
-  createdAt: string;
+  static fromMembers(group: Group, members: GroupMemberDto[]): GroupDto {
+    const dto = plainToInstance(GroupDto, group);
+    dto.members = members;
+    return dto;
+  }
 }
