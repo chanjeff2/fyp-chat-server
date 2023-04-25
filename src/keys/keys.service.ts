@@ -1,4 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DevicesService } from 'src/devices/devices.service';
@@ -8,7 +14,9 @@ import { PreKey } from 'src/models/pre-key.model';
 import { User, UserDocument } from 'src/models/user.model';
 import { DeviceKeyBundleDto } from './dto/device-key-bundle.dto';
 import { KeyBundleDto } from './dto/key-bundle.dto';
+import { NeedUpdateKeysDto } from './dto/need-update-keys.dto';
 import { UpdateKeysDto } from './dto/update-keys.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class KeysService {
@@ -19,6 +27,7 @@ export class KeysService {
     private oneTimeKeyModel: Model<OneTimeKeyDocument>,
     @Inject(forwardRef(() => DevicesService))
     private devicesService: DevicesService,
+    private configService: ConfigService,
   ) {}
 
   async updateKeys(userId: string, updateKeysDto: UpdateKeysDto) {
@@ -105,5 +114,39 @@ export class KeysService {
       userId: userId,
       deviceId: deviceId,
     });
+  }
+
+  async isDeviceNeedUpdateKeys(
+    userId: string,
+    deviceId: number,
+  ): Promise<NeedUpdateKeysDto> {
+    const device = await this.devicesService.getDevice(userId, deviceId);
+    if (!device) {
+      throw new NotFoundException(`Deivce #${deviceId} not found`);
+    }
+    const signedPreKey = device.signedPreKey;
+    let isSignedPreKeyExpired;
+    if (device.signedPreKey != null) {
+      const monthsBeforeExpiration =
+        this.configService.get<number>('SIGNED_PRE_KEY_EXPIRATION_MONTHS') ?? 1;
+      const expiredDay = moment(signedPreKey!!.createdAt).add(
+        monthsBeforeExpiration,
+        'month',
+      );
+      isSignedPreKeyExpired = moment().isAfter(expiredDay);
+    } else {
+      isSignedPreKeyExpired = true;
+    }
+
+    const oneTimeKeysCount = await this.oneTimeKeyModel.count({
+      userId: userId,
+      deviceId: deviceId,
+    });
+    const oneTImeKeysThreshold =
+      this.configService.get<number>('ONE_TIME_KEY_THRESHOLD') ?? 20;
+    const dto = new NeedUpdateKeysDto();
+    dto.signedPreKey = isSignedPreKeyExpired;
+    dto.oneTimeKeys = oneTimeKeysCount < oneTImeKeysThreshold;
+    return dto;
   }
 }

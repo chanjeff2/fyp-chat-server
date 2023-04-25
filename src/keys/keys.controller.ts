@@ -14,6 +14,7 @@ import { JwtPayload } from 'src/interfaces/jwt-payload.interface';
 import { KeyBundleDto } from './dto/key-bundle.dto';
 import { UpdateKeysDto } from './dto/update-keys.dto';
 import { KeysService } from './keys.service';
+import { NeedUpdateKeysDto } from './dto/need-update-keys.dto';
 
 @Controller('keys')
 export class KeysController {
@@ -53,5 +54,14 @@ export class KeysController {
       );
     }
     return keyBundle;
+  }
+
+  @Get('devices/:deviceId/is-need-update-keys')
+  @UseGuards(JwtAuthGuard)
+  async isDeviceNeedUpdateKeys(
+    @AuthUser() user: JwtPayload,
+    @Param('deviceId', ParseIntPipe) deviceId: number,
+  ): Promise<NeedUpdateKeysDto> {
+    return await this.keysService.isDeviceNeedUpdateKeys(user.userId, deviceId);
   }
 }
