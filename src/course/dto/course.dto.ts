@@ -17,16 +17,10 @@ export class CourseDto extends GroupDto {
   semester: Semester;
 
   static fromCourseAndGroupDto(course: Course, groupDto: GroupDto): CourseDto {
-    const dto = new CourseDto();
-    dto._id = groupDto._id;
+    const dto = groupDto as CourseDto;
     dto.courseCode = course.courseCode;
     dto.year = course.year;
     dto.semester = course.semester;
-    dto.groupType = groupDto.groupType;
-    dto.name = groupDto.name;
-    dto.description = groupDto.description;
-    dto.members = groupDto.members;
-    dto.createdAt = groupDto.createdAt;
     return dto;
   }
 }
